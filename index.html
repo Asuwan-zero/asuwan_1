@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Café — สั่งอาหารออนไลน์</title>
+    <meta name="description" content="สั่งอาหารและเครื่องดื่มออนไลน์ ง่าย สะดวก ผ่าน QR Code">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+    <nav>
+        <div class="logo"><h1>☕ My Café</h1></div>
+        <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#menu-section">Menu</a></li>
+            <li><a href="order.html" class="nav-order-link" id="navOrderLink" style="display:none">📦 ติดตามออเดอร์</a></li>
+            <li><span class="table-badge" id="tableBadge">📍 โต๊ะ <span id="tableNum"></span></span></li>
+            <li>
+                <span class="nav-cart" id="cartIcon" onclick="toggleCart()">
+                    🛒
+                    <span class="cart-badge" id="cartBadge">0</span>
+                </span>
+            </li>
+        </ul>
+    </nav>
+
+    <section>
+        <div class="hero-banner">
+            <h1>Welcome to My Café</h1>
+            <p>Discover our delicious menu and cozy atmosphere.</p>
+            <button onclick="document.getElementById('menu-section').scrollIntoView({behavior:'smooth'})">🍽️ ดูเมนู</button>
+        </div>
+    </section>
+
+    <section class="second-section">
+
+        <!-- ===== RECOMMENDED PRODUCTS ===== -->
+        <header><h2>✨ Recommended Products</h2></header>
+        <div class="slider-wrapper">
+            <button class="arrow-btn arrow-left" onclick="slideTop(-1)">&#8592;</button>
+            <div class="slider-track" id="topTrack">
+                <div class="product"><div class="product-img">🍜</div><h3>ข้าวผัด</h3><p>ข้าวผัดกระเพราไก่ไข่ดาว</p><span class="price">฿120</span><button class="add-to-cart" onclick="openModal('🍜','ข้าวผัด','ข้าวผัดกระเพราไก่ไข่ดาว',120)">🛒 เพิ่มลงตะกร้า</button></div>
+                <div class="product"><div class="product-img">🍛</div><h3>แกงเขียวหวาน</h3><p>แกงเขียวหวานไก่ใส่มะเขือ</p><span class="price">฿150</span><button class="add-to-cart" onclick="openModal('🍛','แกงเขียวหวาน','แกงเขียวหวานไก่ใส่มะเขือ',150)">🛒 เพิ่มลงตะกร้า</button></div>
+                <div class="product"><div class="product-img">🍣</div><h3>ต้มยำกุ้ง</h3><p>ต้มยำกุ้งน้ำข้น</p><span class="price">฿200</span><button class="add-to-cart" onclick="openModal('🍣','ต้มยำกุ้ง','ต้มยำกุ้งน้ำข้น',200)">🛒 เพิ่มลงตะกร้า</button></div>
+                <div class="product"><div class="product-img">🍱</div><h3>ผัดไทย</h3><p>ผัดไทยกุ้งสด</p><span class="price">฿180</span><button class="add-to-cart" onclick="openModal('🍱','ผัดไทย','ผัดไทยกุ้งสด',180)">🛒 เพิ่มลงตะกร้า</button></div>
+                <div class="product"><div class="product-img">🍲</div><h3>ข้าวมันไก่</h3><p>ข้าวมันไก่ต้มซีอิ๊ว</p><span class="price">฿130</span><button class="add-to-cart" onclick="openModal('🍲','ข้าวมันไก่','ข้าวมันไก่ต้มซีอิ๊ว',130)">🛒 เพิ่มลงตะกร้า</button></div>
+                <div class="product"><div class="product-img">🥗</div><h3>ลาบหมู</h3><p>ลาบหมูสไตล์อีสาน</p><span class="price">฿110</span><button class="add-to-cart" onclick="openModal('🥗','ลาบหมู','ลาบหมูสไตล์อีสาน',110)">🛒 เพิ่มลงตะกร้า</button></div>
+            </div>
+            <button class="arrow-btn arrow-right" onclick="slideTop(1)">&#8594;</button>
+        </div>
+
+        <!-- ===== OUR MENU TABS ===== -->
+        <section class="Menu-section" id="menu-section">
+            <h4>🍽️ Our Menu</h4>
+            <div class="menu-items">
+                <div class="menu-tab active" onclick="switchCategory('food', this)"><h3>🍜 เมนูอาหาร</h3></div>
+                <div class="menu-tab"        onclick="switchCategory('snack', this)"><h3>🍤 เมนูขนม</h3></div>
+                <div class="menu-tab"        onclick="switchCategory('dessert', this)"><h3>🍰 เมนูของหวาน</h3></div>
+                <div class="menu-tab"        onclick="switchCategory('drink', this)"><h3>🧋 เมนูเครื่องดื่ม</h3></div>
+            </div>
+        </section>
+
+        <!-- ===== SEARCH BAR ===== -->
+        <div class="search-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" id="searchInput" placeholder="ค้นหาเมนู..." oninput="searchMenu()">
+            <button class="search-clear" id="searchClear" onclick="clearSearch()" style="display:none">✕</button>
+        </div>
+
+        <!-- ===== CATEGORY GRID (แสดงต่อด้านล่าง) ===== -->
+        <div class="category-grid-wrapper">
+            <div class="category-grid" id="catGrid"></div>
+            <div class="no-results" id="noResults" style="display:none">
+                <span class="no-results-icon">🔍</span>
+                <p>ไม่พบเมนูที่ค้นหา</p>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ===== CUSTOMIZATION MODAL ===== -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-emoji" id="modalEmoji"></span>
+                <div class="modal-info">
+                    <h3 id="modalName"></h3>
+                    <p class="modal-desc" id="modalDesc"></p>
+                    <span class="modal-price" id="modalPrice"></span>
+                </div>
+            </div>
+
+            <div class="modal-group">
+                <label class="group-title">📝 ต้องการรายละเอียดอะไรบ้าง</label>
+                <textarea class="modal-note" id="modalNote" placeholder="เช่น ไม่ใส่น้ำแข็ง, เผ็ดน้อย, หวานน้อย, เพิ่มไข่มุก..."></textarea>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+                <button class="btn-confirm" onclick="confirmAdd()">🛒 เพิ่มลงตะกร้า</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CART SIDEBAR ===== -->
+    <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+    <div class="cart-panel" id="cartPanel">
+        <div class="cart-header">
+            <h2>🧺 ตะกร้า</h2>
+            <button class="cart-close" onclick="toggleCart()">✕</button>
+        </div>
+        <div class="cart-body" id="cartBody"></div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>ราคารวม</span>
+                <span id="cartTotalPrice">฿0</span>
+            </div>
+            <button class="btn-order" id="btnOrder" onclick="openCheckout()" disabled>🛒 สั่งเลย</button>
+        </div>
+    </div>
+
+    <!-- ===== CHECKOUT MODAL ===== -->
+    <div class="checkout-overlay" id="checkoutOverlay" onclick="closeCheckoutOutside(event)">
+        <div class="checkout-modal">
+            <div class="checkout-header">
+                <h2>📋 ยืนยันการสั่ง</h2>
+                <button class="checkout-close" onclick="closeCheckout()">✕</button>
+            </div>
+
+            <!-- Step 1: Table Number -->
+            <div class="checkout-step" id="checkoutStep1">
+                <div class="step-indicator">
+                    <div class="step-dot active">1</div>
+                    <div class="step-line"></div>
+                    <div class="step-dot">2</div>
+                </div>
+                <div class="checkout-section">
+                    <div class="section-icon">🪑</div>
+                    <h3>หมายเลขโต๊ะ</h3>
+                    <p class="section-desc">กรุณาระบุหมายเลขโต๊ะเพื่อพนักงานจะได้เสิร์ฟถูกโต๊ะ</p>
+                    <div class="table-input-wrapper">
+                        <input type="number" id="checkoutTableNum" class="table-input" min="1" max="99" placeholder="เช่น 1, 2, 3...">
+                    </div>
+                    <div class="table-grid" id="tableGrid">
+                        <button class="table-btn" onclick="selectTable(1)">1</button>
+                        <button class="table-btn" onclick="selectTable(2)">2</button>
+                        <button class="table-btn" onclick="selectTable(3)">3</button>
+                        <button class="table-btn" onclick="selectTable(4)">4</button>
+                        <button class="table-btn" onclick="selectTable(5)">5</button>
+                        <button class="table-btn" onclick="selectTable(6)">6</button>
+                        <button class="table-btn" onclick="selectTable(7)">7</button>
+                        <button class="table-btn" onclick="selectTable(8)">8</button>
+                        <button class="table-btn" onclick="selectTable(9)">9</button>
+                        <button class="table-btn" onclick="selectTable(10)">10</button>
+                        <button class="table-btn" onclick="selectTable(11)">11</button>
+                        <button class="table-btn" onclick="selectTable(12)">12</button>
+                    </div>
+                </div>
+                <div class="checkout-actions">
+                    <button class="btn-cancel" onclick="closeCheckout()">ยกเลิก</button>
+                    <button class="btn-next" id="btnNextStep" onclick="goToPaymentStep()">ถัดไป →</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Payment Method -->
+            <div class="checkout-step" id="checkoutStep2" style="display:none">
+                <div class="step-indicator">
+                    <div class="step-dot done">✓</div>
+                    <div class="step-line active"></div>
+                    <div class="step-dot active">2</div>
+                </div>
+                <div class="checkout-section">
+                    <div class="section-icon">💳</div>
+                    <h3>เลือกวิธีชำระเงิน</h3>
+                    <p class="section-desc">ยอดรวม: <strong id="checkoutTotal">฿0</strong></p>
+
+                    <div class="payment-options">
+                        <div class="payment-card" id="payQR" onclick="selectPayment('qr')">
+                            <div class="payment-icon">📱</div>
+                            <div class="payment-info">
+                                <h4>สแกนจ่าย (QR Code)</h4>
+                                <p>ชำระผ่าน Mobile Banking / PromptPay</p>
+                            </div>
+                            <div class="payment-check"></div>
+                        </div>
+                        <div class="payment-card" id="payCash" onclick="selectPayment('cash')">
+                            <div class="payment-icon">💵</div>
+                            <div class="payment-info">
+                                <h4>จ่ายเงินสด</h4>
+                                <p>ชำระเงินสดที่เคาน์เตอร์</p>
+                            </div>
+                            <div class="payment-check"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="checkout-summary">
+                    <h4>📦 สรุปรายการ</h4>
+                    <div id="checkoutItemsList"></div>
+                    <div class="checkout-summary-total">
+                        <span>รวมทั้งหมด</span>
+                        <span id="checkoutSummaryTotal">฿0</span>
+                    </div>
+                </div>
+
+                <div class="checkout-actions">
+                    <button class="btn-back" onclick="goBackToTable()">← ย้อนกลับ</button>
+                    <button class="btn-confirm-order" id="btnConfirmOrder" onclick="confirmCheckout()" disabled>✅ ยืนยันสั่งอาหาร</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== QR PAYMENT OVERLAY ===== -->
+    <div class="qr-overlay" id="qrOverlay">
+        <div class="qr-modal">
+            <div class="qr-header">
+                <h2>📱 สแกนจ่ายเงิน</h2>
+                <button class="checkout-close" onclick="closeQRPayment()">✕</button>
+            </div>
+            <div class="qr-body">
+                <div class="qr-amount">
+                    <span>ยอดชำระ</span>
+                    <span class="qr-total" id="qrTotal">฿0</span>
+                </div>
+                <div class="qr-code-container" id="qrCodeContainer">
+                    <canvas id="qrCanvas"></canvas>
+                </div>
+                <div class="qr-info">
+                    <p>🏦 PromptPay: <strong>xxx-xxx-xxxx</strong></p>
+                    <p>👤 ชื่อบัญชี: <strong>My Café</strong></p>
+                </div>
+                <div class="qr-timer">
+                    <span>⏱️ กรุณาชำระภายใน</span>
+                    <span class="timer-count" id="qrTimer">05:00</span>
+                </div>
+                <div class="qr-actions">
+                    <button class="btn-qr-done" onclick="qrPaymentDone()">✅ ชำระเรียบร้อยแล้ว</button>
+                    <button class="btn-qr-cancel" onclick="closeQRPayment()">ยกเลิก</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ORDER STATUS OVERLAY ===== -->
+    <div class="order-overlay" id="orderOverlay">
+        <div class="order-card" id="orderCard">
+            <div class="order-status-icon" id="orderIcon">⏳</div>
+            <h2 id="orderTitle">กำลังเตรียมออเดอร์...</h2>
+            <p id="orderSubtitle">กรุณารอสักครู่</p>
+            <div class="order-table-info" id="orderTableInfo" style="display:none"></div>
+            <div class="order-items-list" id="orderItemsList"></div>
+            <button class="btn-close-order" id="btnCloseOrder" onclick="closeOrderStatus()" style="display:none">ปิด</button>
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast"></div>
+    <script type="module" src="index.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Café — Admin Dashboard</title>
+    <meta name="description" content="ระบบจัดการร้านกาแฟ แดชบอร์ด สถิติ และการจัดการออเดอร์">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-icon">☕</span>
+            <div class="brand-text">
+                <h1>My Café</h1>
+                <span class="brand-sub">Admin Panel</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">เมนูหลัก</div>
+            <a class="nav-item active" data-page="dashboard" onclick="navigateTo('dashboard', this)">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">แดชบอร์ด</span>
+            </a>
+            <a class="nav-item" data-page="orders" onclick="navigateTo('orders', this)">
+                <span class="nav-icon">📦</span>
+                <span class="nav-text">จัดการออเดอร์</span>
+                <span class="nav-badge" id="pendingBadge">0</span>
+            </a>
+            <a class="nav-item" data-page="menu" onclick="navigateTo('menu', this)">
+                <span class="nav-icon">🍽️</span>
+                <span class="nav-text">จัดการเมนู</span>
+            </a>
+            <a class="nav-item" data-page="customers" onclick="navigateTo('customers', this)">
+                <span class="nav-icon">👥</span>
+                <span class="nav-text">ลูกค้า</span>
+            </a>
+            <a class="nav-item" data-page="stats" onclick="navigateTo('stats', this)">
+                <span class="nav-icon">📈</span>
+                <span class="nav-text">สถิติการขาย</span>
+            </a>
+
+            <div class="nav-section-label">ตั้งค่า</div>
+            <a class="nav-item" data-page="tables" onclick="navigateTo('tables', this)">
+                <span class="nav-icon">🪑</span>
+                <span class="nav-text">จัดการโต๊ะ / QR</span>
+            </a>
+            <a class="nav-item" data-page="settings" onclick="navigateTo('settings', this)">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-text">ตั้งค่าระบบ</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="index.html" class="sidebar-link" target="_blank">
+                <span>🌐</span> ดูหน้าร้าน
+            </a>
+        </div>
+    </aside>
+
+    <!-- ===== MOBILE HEADER ===== -->
+    <div class="mobile-header" id="mobileHeader">
+        <button class="hamburger" id="hamburger" onclick="toggleSidebar()">
+            <span></span><span></span><span></span>
+        </button>
+        <h2>☕ My Café Admin</h2>
+        <div class="header-actions">
+            <span class="notification-bell" id="notifBell" onclick="toggleNotifications()">
+                🔔
+                <span class="notif-dot" id="notifDot"></span>
+            </span>
+        </div>
+    </div>
+
+    <!-- ===== OVERLAY FOR MOBILE ===== -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main-content" id="mainContent">
+
+        <!-- TOP BAR -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <h2 class="page-title" id="pageTitle">แดชบอร์ด</h2>
+                <p class="page-subtitle" id="pageSubtitle">ภาพรวมร้านวันนี้</p>
+            </div>
+            <div class="topbar-right">
+                <div class="topbar-date" id="topbarDate"></div>
+                <span class="notification-bell desktop-only" onclick="toggleNotifications()">
+                    🔔
+                    <span class="notif-dot" id="notifDotDesktop"></span>
+                </span>
+                <div class="admin-avatar">
+                    <span>👤</span>
+                    <span class="admin-name">Admin</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PAGE: DASHBOARD ===== -->
+        <div class="page-content active" id="page-dashboard">
+            <!-- Stats Cards Row -->
+            <div class="stats-grid">
+                <div class="stat-card stat-revenue">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-info">
+                        <span class="stat-label">รายได้วันนี้</span>
+                        <span class="stat-value" id="todayRevenue">฿0</span>
+                        <span class="stat-change positive" id="revenueChange">+0%</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-orders">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-info">
+                        <span class="stat-label">ออเดอร์วันนี้</span>
+                        <span class="stat-value" id="todayOrders">0</span>
+                        <span class="stat-change positive" id="ordersChange">+0%</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-customers">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <span class="stat-label">ลูกค้าวันนี้</span>
+                        <span class="stat-value" id="todayCustomers">0</span>
+                        <span class="stat-change positive" id="customersChange">+0%</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-avg">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-info">
+                        <span class="stat-label">ค่าเฉลี่ย/ออเดอร์</span>
+                        <span class="stat-value" id="avgOrder">฿0</span>
+                        <span class="stat-change" id="avgChange">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="dashboard-grid">
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h3>📈 รายได้รายชั่วโมง</h3>
+                        <select class="chart-filter" id="revenueFilter" onchange="updateRevenueChart()">
+                            <option value="today">วันนี้</option>
+                            <option value="week">สัปดาห์นี้</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🏆 สินค้าขายดี</h3>
+                    </div>
+                    <div class="top-sellers" id="topSellers">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>🕐 ออเดอร์ล่าสุด</h3>
+                    <button class="btn-text" onclick="navigateTo('orders', document.querySelector('[data-page=orders]'))">ดูทั้งหมด →</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table" id="recentOrdersTable">
+                        <thead>
+                            <tr>
+                                <th>ออเดอร์</th>
+                                <th>โต๊ะ</th>
+                                <th>รายการ</th>
+                                <th>ราคา</th>
+                                <th>สถานะ</th>
+                                <th>เวลา</th>
+                                <th>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentOrdersBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <button class="quick-btn" onclick="navigateTo('menu', document.querySelector('[data-page=menu]'))">
+                    <span class="quick-icon">➕</span>
+                    <span>เพิ่มเมนู</span>
+                </button>
+                <button class="quick-btn" onclick="navigateTo('tables', document.querySelector('[data-page=tables]'))">
+                    <span class="quick-icon">📱</span>
+                    <span>สร้าง QR Code</span>
+                </button>
+                <button class="quick-btn" onclick="exportData()">
+                    <span class="quick-icon">📥</span>
+                    <span>ส่งออกข้อมูล</span>
+                </button>
+                <button class="quick-btn" onclick="addDemoOrders()">
+                    <span class="quick-icon">🧪</span>
+                    <span>เพิ่มข้อมูลตัวอย่าง</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ===== PAGE: ORDERS ===== -->
+        <div class="page-content" id="page-orders">
+            <!-- Orders Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="filterOrders('all', this)">ทั้งหมด</button>
+                    <button class="filter-tab" onclick="filterOrders('preparing', this)">⏳ กำลังเตรียม</button>
+                    <button class="filter-tab" onclick="filterOrders('done', this)">✅ เสร็จแล้ว</button>
+                </div>
+                <div class="filter-actions">
+                    <input type="text" class="search-box" id="orderSearch" placeholder="🔍 ค้นหาออเดอร์..." oninput="searchOrders()">
+                </div>
+            </div>
+
+            <!-- Orders Grid -->
+            <div class="orders-grid" id="ordersGrid">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+
+        <!-- ===== PAGE: MENU ===== -->
+        <div class="page-content" id="page-menu">
+            <div class="filter-bar">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="filterMenu('all', this)">ทั้งหมด</button>
+                    <button class="filter-tab" onclick="filterMenu('food', this)">🍜 อาหาร</button>
+                    <button class="filter-tab" onclick="filterMenu('snack', this)">🍤 ขนม</button>
+                    <button class="filter-tab" onclick="filterMenu('dessert', this)">🍰 ของหวาน</button>
+                    <button class="filter-tab" onclick="filterMenu('drink', this)">🧋 เครื่องดื่ม</button>
+                </div>
+                <button class="btn-primary" onclick="openMenuModal()">➕ เพิ่มเมนูใหม่</button>
+            </div>
+
+            <div class="menu-grid" id="adminMenuGrid">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+
+        <!-- ===== PAGE: CUSTOMERS ===== -->
+        <div class="page-content" id="page-customers">
+            <div class="stats-grid">
+                <div class="stat-card stat-revenue">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <span class="stat-label">ลูกค้าทั้งหมด</span>
+                        <span class="stat-value" id="totalCustomers">0</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-orders">
+                    <div class="stat-icon">🔄</div>
+                    <div class="stat-info">
+                        <span class="stat-label">ลูกค้าที่กลับมา</span>
+                        <span class="stat-value" id="returningCustomers">0</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-customers">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-info">
+                        <span class="stat-label">ลูกค้า VIP</span>
+                        <span class="stat-value" id="vipCustomers">0</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-avg">
+                    <div class="stat-icon">💳</div>
+                    <div class="stat-info">
+                        <span class="stat-label">ยอดเฉลี่ย/คน</span>
+                        <span class="stat-value" id="avgPerCustomer">฿0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>👥 รายชื่อลูกค้า</h3>
+                    <input type="text" class="search-box" id="customerSearch" placeholder="🔍 ค้นหาลูกค้า..." oninput="searchCustomers()">
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table" id="customersTable">
+                        <thead>
+                            <tr>
+                                <th>ลูกค้า</th>
+                                <th>โต๊ะ</th>
+                                <th>จำนวนออเดอร์</th>
+                                <th>ยอดรวม</th>
+                                <th>ออเดอร์ล่าสุด</th>
+                                <th>ระดับ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customersBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PAGE: STATS ===== -->
+        <div class="page-content" id="page-stats">
+            <div class="stats-grid">
+                <div class="stat-card stat-revenue">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-info">
+                        <span class="stat-label">รายได้ทั้งหมด</span>
+                        <span class="stat-value" id="allTimeRevenue">฿0</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-orders">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-info">
+                        <span class="stat-label">ออเดอร์ทั้งหมด</span>
+                        <span class="stat-value" id="allTimeOrders">0</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-customers">
+                    <div class="stat-icon">🍽️</div>
+                    <div class="stat-info">
+                        <span class="stat-label">เมนูทั้งหมด</span>
+                        <span class="stat-value" id="totalMenuItems">0</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-avg">
+                    <div class="stat-icon">🪑</div>
+                    <div class="stat-info">
+                        <span class="stat-label">โต๊ะที่ใช้มากสุด</span>
+                        <span class="stat-value" id="topTable">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h3>📊 รายได้รายวัน (7 วัน)</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="dailyChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h3>🥧 สัดส่วนหมวดหมู่</h3>
+                    </div>
+                    <div class="chart-container chart-pie">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>🏆 เมนูขายดี Top 10</h3>
+                </div>
+                <div class="top-items-grid" id="topItemsGrid">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PAGE: TABLES ===== -->
+        <div class="page-content" id="page-tables">
+            <div class="filter-bar">
+                <div class="filter-tabs">
+                    <span style="font-weight:600;color:#64748b">จำนวนโต๊ะ:</span>
+                    <input type="number" class="table-count-input" id="tableCount" value="10" min="1" max="50" onchange="generateTables()">
+                </div>
+                <button class="btn-primary" onclick="generateTables()">🔄 สร้าง QR Code</button>
+            </div>
+
+            <div class="tables-grid" id="tablesGrid">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+
+        <!-- ===== PAGE: SETTINGS ===== -->
+        <div class="page-content" id="page-settings">
+            <div class="settings-grid">
+                <div class="card settings-card">
+                    <div class="card-header"><h3>🏪 ข้อมูลร้าน</h3></div>
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label>ชื่อร้าน</label>
+                            <input type="text" id="shopName" value="My Café" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>คำอธิบาย</label>
+                            <textarea id="shopDesc" class="form-input" rows="3">สั่งอาหารและเครื่องดื่มออนไลน์ ง่าย สะดวก ผ่าน QR Code</textarea>
+                        </div>
+                        <button class="btn-primary" onclick="saveSettings()">💾 บันทึก</button>
+                    </div>
+                </div>
+
+                <div class="card settings-card">
+                    <div class="card-header"><h3>🗃️ จัดการข้อมูล</h3></div>
+                    <div class="settings-form">
+                        <button class="btn-secondary" onclick="exportData()">📥 ส่งออกข้อมูลทั้งหมด (JSON)</button>
+                        <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📤 นำเข้าข้อมูล</button>
+                        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+                        <button class="btn-danger" onclick="clearAllData()">🗑️ ล้างข้อมูลทั้งหมด</button>
+                    </div>
+                </div>
+
+                <div class="card settings-card">
+                    <div class="card-header"><h3>🎨 ธีม</h3></div>
+                    <div class="settings-form">
+                        <div class="theme-options">
+                            <button class="theme-btn active" onclick="setTheme('dark', this)">🌙 Dark</button>
+                            <button class="theme-btn" onclick="setTheme('light', this)">☀️ Light</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ===== MENU MODAL ===== -->
+    <div class="modal-overlay" id="menuModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="menuModalTitle">เพิ่มเมนูใหม่</h3>
+                <button class="modal-close" onclick="closeMenuModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>หมวดหมู่</label>
+                    <select id="menuCategory" class="form-input">
+                        <option value="food">🍜 อาหาร</option>
+                        <option value="snack">🍤 ขนม</option>
+                        <option value="dessert">🍰 ของหวาน</option>
+                        <option value="drink">🧋 เครื่องดื่ม</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>อิโมจิ</label>
+                    <input type="text" id="menuEmoji" class="form-input" placeholder="เช่น 🍜">
+                </div>
+                <div class="form-group">
+                    <label>ชื่อเมนู</label>
+                    <input type="text" id="menuName" class="form-input" placeholder="เช่น ข้าวผัด">
+                </div>
+                <div class="form-group">
+                    <label>รายละเอียด</label>
+                    <input type="text" id="menuDesc" class="form-input" placeholder="เช่น ข้าวผัดกระเพราไก่">
+                </div>
+                <div class="form-group">
+                    <label>ราคา (บาท)</label>
+                    <input type="number" id="menuPrice" class="form-input" placeholder="120" min="0">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeMenuModal()">ยกเลิก</button>
+                <button class="btn-primary" onclick="saveMenuItem()">💾 บันทึก</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ORDER DETAIL MODAL ===== -->
+    <div class="modal-overlay" id="orderDetailModal">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h3 id="orderDetailTitle">รายละเอียดออเดอร์</h3>
+                <button class="modal-close" onclick="closeOrderDetail()">✕</button>
+            </div>
+            <div class="modal-body" id="orderDetailBody">
+            </div>
+            <div class="modal-footer" id="orderDetailFooter">
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== NOTIFICATION PANEL ===== -->
+    <div class="notif-panel" id="notifPanel">
+        <div class="notif-header">
+            <h3>🔔 การแจ้งเตือน</h3>
+            <button class="btn-text" onclick="clearNotifications()">ล้างทั้งหมด</button>
+        </div>
+        <div class="notif-list" id="notifList">
+            <!-- Dynamic content -->
+        </div>
+    </div>
+    <div class="notif-overlay" id="notifOverlay" onclick="toggleNotifications()"></div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="adminToast"></div>
+
+    <script type="module" src="admin.js"></script>
+</body>
+</html>
