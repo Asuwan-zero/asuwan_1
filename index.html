@@ -129,14 +129,41 @@
                 <button class="checkout-close" onclick="closeCheckout()">✕</button>
             </div>
 
-            <!-- Step 1: Table Number -->
+            <!-- Step 1: Order Type + Details -->
             <div class="checkout-step" id="checkoutStep1">
                 <div class="step-indicator">
                     <div class="step-dot active">1</div>
                     <div class="step-line"></div>
                     <div class="step-dot">2</div>
                 </div>
+
+                <!-- Order Type Selection -->
                 <div class="checkout-section">
+                    <div class="section-icon">🛍️</div>
+                    <h3>ประเภทการสั่ง</h3>
+                    <p class="section-desc">เลือกวิธีรับอาหาร</p>
+                    <div class="order-type-options">
+                        <div class="order-type-card selected" id="typeDineIn" onclick="selectOrderType('dinein')">
+                            <div class="order-type-icon">🪑</div>
+                            <div class="order-type-info">
+                                <h4>ทานที่ร้าน</h4>
+                                <p>เลือกโต๊ะและสั่งเลย</p>
+                            </div>
+                            <div class="order-type-check"></div>
+                        </div>
+                        <div class="order-type-card" id="typeDelivery" onclick="selectOrderType('delivery')">
+                            <div class="order-type-icon">🛵</div>
+                            <div class="order-type-info">
+                                <h4>สั่งจากบ้าน</h4>
+                                <p>จัดส่งถึงที่ +฿30</p>
+                            </div>
+                            <div class="order-type-check"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dine-in: Table Selection -->
+                <div class="checkout-section" id="dineInSection">
                     <div class="section-icon">🪑</div>
                     <h3>หมายเลขโต๊ะ</h3>
                     <p class="section-desc">กรุณาระบุหมายเลขโต๊ะเพื่อพนักงานจะได้เสิร์ฟถูกโต๊ะ</p>
@@ -158,6 +185,22 @@
                         <button class="table-btn" onclick="selectTable(12)">12</button>
                     </div>
                 </div>
+
+                <!-- Delivery: Address Form -->
+                <div class="checkout-section" id="deliverySection" style="display:none">
+                    <div class="section-icon">📍</div>
+                    <h3>ข้อมูลการจัดส่ง</h3>
+                    <p class="section-desc">กรุณากรอกข้อมูลเพื่อจัดส่งอาหารถึงบ้าน</p>
+                    <div class="delivery-form">
+                        <input type="text" id="deliveryName" class="delivery-input" placeholder="ชื่อผู้รับ">
+                        <input type="tel" id="deliveryPhone" class="delivery-input" placeholder="เบอร์โทรศัพท์">
+                        <textarea id="deliveryAddress" class="delivery-input delivery-textarea" placeholder="ที่อยู่สำหรับจัดส่ง เช่น 123/4 ซ.สุขุมวิท..."></textarea>
+                    </div>
+                    <div class="delivery-fee-notice">
+                        <span>🛵</span> ค่าจัดส่ง <strong>฿30</strong>
+                    </div>
+                </div>
+
                 <div class="checkout-actions">
                     <button class="btn-cancel" onclick="closeCheckout()">ยกเลิก</button>
                     <button class="btn-next" id="btnNextStep" onclick="goToPaymentStep()">ถัดไป →</button>
@@ -200,6 +243,10 @@
                 <div class="checkout-summary">
                     <h4>📦 สรุปรายการ</h4>
                     <div id="checkoutItemsList"></div>
+                    <div class="summary-item delivery-fee-line" id="deliveryFeeLine" style="display:none">
+                        <span class="summary-item-name">🛵 ค่าจัดส่ง</span>
+                        <span>฿30</span>
+                    </div>
                     <div class="checkout-summary-total">
                         <span>รวมทั้งหมด</span>
                         <span id="checkoutSummaryTotal">฿0</span>

@@ -289,12 +289,24 @@ function changeQty(idx, delta) {
 let selectedTable = tableNumber || null;
 let selectedPayment = null;
 let qrTimerInterval = null;
+let selectedOrderType = 'dinein';
+const DELIVERY_FEE = 30;
+
+function selectOrderType(type) {
+    selectedOrderType = type;
+    document.querySelectorAll('.order-type-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById(type === 'delivery' ? 'typeDelivery' : 'typeDineIn').classList.add('selected');
+    document.getElementById('dineInSection').style.display = type === 'dinein' ? 'block' : 'none';
+    document.getElementById('deliverySection').style.display = type === 'delivery' ? 'block' : 'none';
+}
 
 function openCheckout() {
     if (cart.length === 0) return;
     document.getElementById('cartOverlay').classList.remove('show');
     document.getElementById('cartPanel').classList.remove('open');
     selectedPayment = null;
+    selectedOrderType = 'dinein';
+    selectOrderType('dinein');
     document.getElementById('checkoutStep1').style.display = 'block';
     document.getElementById('checkoutStep2').style.display = 'none';
     document.getElementById('btnConfirmOrder').disabled = true;
@@ -306,6 +318,9 @@ function openCheckout() {
         tableInput.value = '';
         clearTableBtnHighlight();
     }
+    document.getElementById('deliveryName').value = '';
+    document.getElementById('deliveryPhone').value = '';
+    document.getElementById('deliveryAddress').value = '';
     document.querySelectorAll('.payment-card').forEach(c => c.classList.remove('selected'));
     document.getElementById('checkoutOverlay').classList.add('show');
 }
@@ -333,18 +348,31 @@ document.getElementById('checkoutTableNum').addEventListener('input', function()
 });
 
 function goToPaymentStep() {
-    const tableVal = document.getElementById('checkoutTableNum').value.trim();
-    if (!tableVal) {
-        showToast('⚠️ กรุณาระบุหมายเลขโต๊ะ');
-        document.getElementById('checkoutTableNum').focus();
-        return;
+    if (selectedOrderType === 'dinein') {
+        const tableVal = document.getElementById('checkoutTableNum').value.trim();
+        if (!tableVal) {
+            showToast('⚠️ กรุณาระบุหมายเลขโต๊ะ');
+            document.getElementById('checkoutTableNum').focus();
+            return;
+        }
+        selectedTable = tableVal;
+        document.getElementById('tableBadge').classList.add('show');
+        document.getElementById('tableNum').textContent = selectedTable;
+    } else {
+        const name = document.getElementById('deliveryName').value.trim();
+        const phone = document.getElementById('deliveryPhone').value.trim();
+        const addr = document.getElementById('deliveryAddress').value.trim();
+        if (!name) { showToast('⚠️ กรุณาใส่ชื่อผู้รับ'); document.getElementById('deliveryName').focus(); return; }
+        if (!phone) { showToast('⚠️ กรุณาใส่เบอร์โทร'); document.getElementById('deliveryPhone').focus(); return; }
+        if (!addr) { showToast('⚠️ กรุณาใส่ที่อยู่'); document.getElementById('deliveryAddress').focus(); return; }
     }
-    selectedTable = tableVal;
-    document.getElementById('tableBadge').classList.add('show');
-    document.getElementById('tableNum').textContent = selectedTable;
-    const grandTotal = cart.reduce((s, i) => s + i.total * i.qty, 0);
+    const itemsTotal = cart.reduce((s, i) => s + i.total * i.qty, 0);
+    const deliveryFee = selectedOrderType === 'delivery' ? DELIVERY_FEE : 0;
+    const grandTotal = itemsTotal + deliveryFee;
     document.getElementById('checkoutTotal').textContent = `฿${grandTotal}`;
     document.getElementById('checkoutSummaryTotal').textContent = `฿${grandTotal}`;
+    const feeEl = document.getElementById('deliveryFeeLine');
+    if (feeEl) feeEl.style.display = deliveryFee > 0 ? 'flex' : 'none';
     const itemsList = document.getElementById('checkoutItemsList');
     itemsList.innerHTML = cart.map(item => `
         <div class="summary-item">
@@ -383,7 +411,8 @@ function confirmCheckout() {
 
 // ===== QR PAYMENT =====
 function openQRPayment() {
-    const grandTotal = cart.reduce((s, i) => s + i.total * i.qty, 0);
+    const itemsTotal = cart.reduce((s, i) => s + i.total * i.qty, 0);
+    const grandTotal = itemsTotal + (selectedOrderType === 'delivery' ? DELIVERY_FEE : 0);
     document.getElementById('qrTotal').textContent = `฿${grandTotal}`;
     generateQRCode(grandTotal);
     startQRTimer();
@@ -449,10 +478,13 @@ function startQRTimer() {
 async function placeOrder(paymentMethod) {
     if (cart.length === 0) return;
 
-    const grandTotal = cart.reduce((s, i) => s + i.total * i.qty, 0);
+    const itemsTotal = cart.reduce((s, i) => s + i.total * i.qty, 0);
+    const deliveryFee = selectedOrderType === 'delivery' ? DELIVERY_FEE : 0;
+    const grandTotal = itemsTotal + deliveryFee;
     const orderData = {
-        table: selectedTable || null,
-        customerName: null,
+        table: selectedOrderType === 'dinein' ? (selectedTable || null) : null,
+        orderType: selectedOrderType,
+        customerName: selectedOrderType === 'delivery' ? document.getElementById('deliveryName').value.trim() : null,
         paymentMethod: paymentMethod || 'cash',
         items: cart.map(item => ({
             emoji: item.emoji,
@@ -461,22 +493,26 @@ async function placeOrder(paymentMethod) {
             price: item.total,
             qty: item.qty,
         })),
+        deliveryFee: deliveryFee,
         total: grandTotal,
-        status: 'preparing',
+        status: 'pending',
         createdAt: new Date().toISOString(),
     };
+    if (selectedOrderType === 'delivery') {
+        orderData.deliveryInfo = {
+            name: document.getElementById('deliveryName').value.trim(),
+            phone: document.getElementById('deliveryPhone').value.trim(),
+            address: document.getElementById('deliveryAddress').value.trim(),
+        };
+    }
 
     try {
-        // push สร้าง key ใหม่ใน Firebase โดยอัตโนมัติ
         const newRef = push(ref(db, 'orders'));
-        orderData.id = newRef.key; // เก็บ key ของ Firebase ไว้ใน id ด้วย
+        orderData.id = newRef.key;
         await set(newRef, orderData);
-
-        // เก็บ Firebase key ไว้ใน sessionStorage เพื่อให้ order.html ดึงออเดอร์ของโต๊ะนี้ได้
         const myOrders = JSON.parse(sessionStorage.getItem('myOrderKeys') || '[]');
         myOrders.push(newRef.key);
         sessionStorage.setItem('myOrderKeys', JSON.stringify(myOrders));
-
     } catch (e) {
         showToast('⚠️ เชื่อมต่อ Firebase ไม่ได้ กรุณาลองใหม่');
         console.error(e);
@@ -489,7 +525,7 @@ async function placeOrder(paymentMethod) {
     const payLabel = paymentMethod === 'qr' ? '(สแกนจ่าย)' : '(เงินสด)';
     showToast(`✅ สั่งออเดอร์สำเร็จ! ${payLabel} กำลังไปหน้าติดตามสถานะ...`);
     setTimeout(() => {
-        const params = selectedTable ? `?table=${selectedTable}` : '';
+        const params = selectedOrderType === 'dinein' && selectedTable ? `?table=${selectedTable}` : '';
         window.location.href = `order.html${params}`;
     }, 1200);
 }
@@ -519,7 +555,7 @@ Object.assign(window, {
     toggleCart, changeQty, openCheckout, closeCheckout,
     closeCheckoutOutside, selectTable, goToPaymentStep, goBackToTable,
     selectPayment, confirmCheckout, openQRPayment, closeQRPayment, qrPaymentDone,
-    placeOrder, closeOrderStatus, showToast,
+    placeOrder, closeOrderStatus, showToast, selectOrderType,
 });
 
 // ===== INIT =====

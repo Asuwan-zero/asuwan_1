@@ -91,6 +91,10 @@
             background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
             color: #2e7d32;
         }
+        .status-pending {
+            background: linear-gradient(135deg, #fff8e1, #ffecb3);
+            color: #f57f17; animation: pulse 1.5s infinite;
+        }
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.7} }
 
         .order-table-badge {
@@ -342,10 +346,18 @@
 
         function renderOrderCards(orders, container) {
             let html = orders.map(order => {
-                const isPreparing = order.status === 'preparing';
-                const statusClass = isPreparing ? 'status-preparing' : 'status-done';
-                const statusText = isPreparing ? '⏳ กำลังเตรียม' : '✅ เสร็จแล้ว';
+                const st = order.status || 'pending';
+                const isPending = st === 'pending';
+                const isPreparing = st === 'preparing';
+                const isDone = st === 'done';
+
+                let statusClass, statusText;
+                if (isDone) { statusClass = 'status-done'; statusText = '✅ เสร็จแล้ว'; }
+                else if (isPreparing) { statusClass = 'status-preparing'; statusText = '🍳 กำลังเตรียม'; }
+                else { statusClass = 'status-pending'; statusText = '🔔 รอพนักงานรับออเดอร์'; }
+
                 const orderTime = new Date(order.createdAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                const isDelivery = order.orderType === 'delivery';
 
                 const progressHTML = `
                     <div class="progress-tracker">
@@ -353,15 +365,15 @@
                             <div class="progress-dot completed">✓</div>
                             <span class="progress-label completed">สั่งแล้ว</span>
                         </div>
-                        <div class="progress-line active"></div>
+                        <div class="progress-line ${isPreparing || isDone ? 'active' : ''}"></div>
                         <div class="progress-step">
-                            <div class="progress-dot ${isPreparing ? 'active' : 'completed'}">${isPreparing ? '🍳' : '✓'}</div>
-                            <span class="progress-label ${isPreparing ? 'active' : 'completed'}">${isPreparing ? 'กำลังทำ' : 'ทำเสร็จ'}</span>
+                            <div class="progress-dot ${isPreparing ? 'active' : isDone ? 'completed' : ''}">${isPending ? '⏳' : isPreparing ? '🍳' : '✓'}</div>
+                            <span class="progress-label ${isPreparing ? 'active' : isDone ? 'completed' : ''}">${isPending ? 'รอรับ' : isPreparing ? 'กำลังทำ' : 'ทำเสร็จ'}</span>
                         </div>
-                        <div class="progress-line ${!isPreparing ? 'active' : ''}"></div>
+                        <div class="progress-line ${isDone ? 'active' : ''}"></div>
                         <div class="progress-step">
-                            <div class="progress-dot ${!isPreparing ? 'completed' : ''}">${!isPreparing ? '✓' : '🔔'}</div>
-                            <span class="progress-label ${!isPreparing ? 'completed' : ''}">พร้อมเสิร์ฟ</span>
+                            <div class="progress-dot ${isDone ? 'completed' : ''}">${isDone ? '✓' : '🔔'}</div>
+                            <span class="progress-label ${isDone ? 'completed' : ''}">${isDelivery ? 'จัดส่ง' : 'พร้อมเสิร์ฟ'}</span>
                         </div>
                     </div>`;
 
@@ -379,6 +391,19 @@
                     </div>
                 `).join('');
 
+                const deliveryHTML = isDelivery && order.deliveryInfo ? `
+                    <div style="background:#faf7f4;padding:12px 16px;border-radius:12px;margin:8px 0;border:1px solid #ebe6e0;font-size:.85rem;color:#5a4535;line-height:1.7">
+                        <strong>🛵 จัดส่งถึงบ้าน</strong><br>
+                        👤 ${order.deliveryInfo.name}<br>
+                        📞 ${order.deliveryInfo.phone}<br>
+                        🏠 ${order.deliveryInfo.address}
+                    </div>` : '';
+
+                const deliveryFeeLine = order.deliveryFee ? `
+                    <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:.85rem;color:#9a856e;border-bottom:1px dashed #ebe6e0">
+                        <span>🛵 ค่าจัดส่ง</span><span>฿${order.deliveryFee}</span>
+                    </div>` : '';
+
                 return `
                     <div class="order-card">
                         <div class="order-card-header">
@@ -388,15 +413,19 @@
                         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
                             <span class="status-badge ${statusClass}">${statusText}</span>
                             ${order.table ? `<span class="order-table-badge">📍 โต๊ะ ${order.table}</span>` : ''}
+                            ${isDelivery ? '<span class="order-table-badge">🛵 Delivery</span>' : ''}
                         </div>
                         ${progressHTML}
+                        ${deliveryHTML}
                         <div class="order-items">${itemsHTML}</div>
+                        ${deliveryFeeLine}
                         <div class="order-total">
                             <span>รวมทั้งหมด</span>
                             <span>฿${order.total}</span>
                         </div>
                     </div>`;
             }).join('');
+
 
             html += `<div style="text-align:center;margin-top:10px;">
                 <a href="index.html${tableNumber ? '?table=' + tableNumber : ''}" class="btn-back-menu" style="font-size:0.9rem;padding:10px 22px;">🍽️ สั่งเพิ่ม</a>

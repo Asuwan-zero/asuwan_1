@@ -861,6 +861,86 @@
         }
         .btn-qr-cancel:hover { background: #e4ddd5; }
 
+        /* ===== ORDER TYPE SELECTION ===== */
+        .order-type-options {
+            display: flex; flex-direction: column;
+            gap: 12px; margin-top: 8px;
+        }
+        .order-type-card {
+            display: flex; align-items: center; gap: 14px;
+            padding: 18px 20px; border: 2px solid #ebe6e0;
+            border-radius: 16px; background: #fff;
+            cursor: pointer; transition: all 0.3s;
+            position: relative;
+        }
+        .order-type-card:hover {
+            border-color: #b4a089; background: #fdf9f5;
+            transform: translateY(-1px);
+        }
+        .order-type-card.selected {
+            border-color: #3d2c2c;
+            background: linear-gradient(135deg, #faf7f4, #f5ede5);
+            box-shadow: 0 4px 16px rgba(61,44,44,0.12);
+        }
+        .order-type-icon {
+            width: 50px; height: 50px;
+            background: linear-gradient(135deg, #f5ede5, #ebe0d4);
+            border-radius: 14px; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 1.5rem; flex-shrink: 0;
+        }
+        .order-type-card.selected .order-type-icon {
+            background: linear-gradient(135deg, #3d2c2c, #5a4535);
+        }
+        .order-type-info { flex: 1; text-align: left; }
+        .order-type-info h4 { font-size: 0.95rem; color: #3d2c2c; margin-bottom: 2px; }
+        .order-type-info p { font-size: 0.78rem; color: #9a856e; margin: 0; }
+        .order-type-check {
+            width: 24px; height: 24px; border-radius: 50%;
+            border: 2px solid #d6c8b8;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s; flex-shrink: 0;
+        }
+        .order-type-card.selected .order-type-check {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            border-color: #27ae60;
+        }
+        .order-type-card.selected .order-type-check::after {
+            content: '✓'; color: #fff; font-size: 0.75rem; font-weight: 700;
+        }
+
+        /* ===== DELIVERY FORM ===== */
+        .delivery-form {
+            display: flex; flex-direction: column; gap: 12px;
+            margin-top: 8px;
+        }
+        .delivery-input {
+            width: 100%; padding: 12px 16px;
+            border: 2px solid #ebe6e0; border-radius: 12px;
+            font-size: 0.9rem; font-family: inherit;
+            color: #3d2c2c; background: #faf7f4;
+            transition: all 0.3s;
+        }
+        .delivery-input:focus {
+            outline: none; border-color: #b4a089;
+            box-shadow: 0 4px 16px rgba(180,160,137,0.2);
+            background: #fff;
+        }
+        .delivery-input::placeholder { color: #c4b5a3; }
+        .delivery-textarea { resize: vertical; min-height: 70px; }
+        .delivery-fee-notice {
+            display: flex; align-items: center; gap: 8px;
+            margin-top: 12px; padding: 10px 16px;
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            border-radius: 12px; font-size: 0.88rem;
+            color: #2e7d32; font-weight: 500;
+        }
+        .delivery-fee-notice strong { font-size: 1rem; }
+        .delivery-fee-line {
+            color: #9a856e !important;
+            border-bottom: 1px dashed #ebe6e0 !important;
+        }
+
         /* ===== RESPONSIVE for checkout/payment ===== */
         @media (max-width: 480px) {
             .checkout-modal, .qr-modal { width: 96%; border-radius: 20px; }

@@ -271,3 +271,31 @@ textarea.form-input{resize:vertical}
 .tables-grid{grid-template-columns:repeat(2,1fr)}
 .menu-grid{grid-template-columns:1fr}
 }
+
+/* PENDING ALERT BANNER */
+.pending-alert-banner{display:none;align-items:center;justify-content:space-between;padding:14px 32px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#1e293b;font-weight:700;font-size:.95rem;animation:pendingPulse 1.5s infinite}
+.pending-alert-banner.show{display:flex}
+.alert-content{display:flex;align-items:center;gap:10px}
+.alert-icon{font-size:1.5rem;animation:bellShake 0.8s infinite}
+.alert-btn{background:#1e293b;color:#f59e0b;border:none;padding:8px 18px;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s}
+.alert-btn:hover{background:#0f172a;transform:scale(1.05)}
+@keyframes pendingPulse{0%,100%{opacity:1}50%{opacity:.85}}
+@keyframes bellShake{0%,100%{transform:rotate(0)}25%{transform:rotate(15deg)}50%{transform:rotate(-15deg)}75%{transform:rotate(10deg)}}
+
+/* PENDING BADGE */
+.badge-pending{background:rgba(245,158,11,.2);color:var(--accent);animation:pendingPulse 1.5s infinite}
+
+/* DELIVERY BADGE */
+.badge-delivery{background:rgba(59,130,246,.15);color:var(--blue)}
+
+/* ACCEPT BUTTON */
+.btn-sm.orange{background:rgba(245,158,11,.2);color:var(--accent);font-weight:600}
+.btn-sm.orange:hover{background:rgba(245,158,11,.4)}
+
+/* ORDER CARD DELIVERY INFO */
+.order-card-delivery{font-size:.78rem;color:var(--text3);margin:4px 0;padding:4px 0}
+.order-card-total small{font-size:.72rem;color:var(--text3);font-weight:400}
+
+@media(max-width:768px){
+.pending-alert-banner{padding:12px 16px;font-size:.85rem;margin-top:0}
+}

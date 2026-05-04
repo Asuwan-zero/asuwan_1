@@ -82,6 +82,15 @@
     <!-- ===== MAIN CONTENT ===== -->
     <main class="main-content" id="mainContent">
 
+        <!-- PENDING ALERT BANNER -->
+        <div class="pending-alert-banner" id="pendingAlertBanner">
+            <div class="alert-content">
+                <span class="alert-icon">🔔</span>
+                <span>มีออเดอร์ใหม่รอรับ!</span>
+            </div>
+            <button class="alert-btn" onclick="navigateTo('orders', document.querySelector('[data-page=orders]'))">ดูออเดอร์ →</button>
+        </div>
+
         <!-- TOP BAR -->
         <div class="topbar">
             <div class="topbar-left">
@@ -216,6 +225,7 @@
             <div class="filter-bar">
                 <div class="filter-tabs">
                     <button class="filter-tab active" onclick="filterOrders('all', this)">ทั้งหมด</button>
+                    <button class="filter-tab" onclick="filterOrders('pending', this)">🔔 รอรับ</button>
                     <button class="filter-tab" onclick="filterOrders('preparing', this)">⏳ กำลังเตรียม</button>
                     <button class="filter-tab" onclick="filterOrders('done', this)">✅ เสร็จแล้ว</button>
                 </div>

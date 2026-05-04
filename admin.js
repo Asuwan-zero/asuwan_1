@@ -67,6 +67,9 @@ function startRealtimeOrders() {
     }
 
     updatePendingBadge(orders);
+    // Persistent alert for pending orders
+    const pendingCount = orders.filter(o => o.status === 'pending').length;
+    if (pendingCount > 0) startPendingAlert(); else stopPendingAlert();
     const active = document.querySelector('.page-content.active')?.id?.replace('page-','');
     if (active === 'dashboard') renderDashboard(orders);
     if (active === 'orders') renderOrders(orders);
@@ -86,6 +89,23 @@ function playNotificationSound() {
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.4);
   } catch(e) {}
+}
+
+// ===== PERSISTENT ALERT FOR PENDING ORDERS =====
+let _pendingAlertInterval = null;
+function startPendingAlert() {
+  if (_pendingAlertInterval) return;
+  playNotificationSound();
+  _pendingAlertInterval = setInterval(() => {
+    playNotificationSound();
+  }, 5000);
+  const banner = document.getElementById('pendingAlertBanner');
+  if (banner) banner.classList.add('show');
+}
+function stopPendingAlert() {
+  if (_pendingAlertInterval) { clearInterval(_pendingAlertInterval); _pendingAlertInterval = null; }
+  const banner = document.getElementById('pendingAlertBanner');
+  if (banner) banner.classList.remove('show');
 }
 
 // ===== INIT =====
@@ -176,9 +196,9 @@ function timeDiff(ts) {
 }
 function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
 function statusBadge(status) {
-  return status === 'done'
-    ? '<span class="badge badge-done">✅ เสร็จแล้ว</span>'
-    : '<span class="badge badge-preparing">⏳ กำลังเตรียม</span>';
+  if (status === 'done') return '<span class="badge badge-done">✅ เสร็จแล้ว</span>';
+  if (status === 'pending') return '<span class="badge badge-pending">🔔 รอรับออเดอร์</span>';
+  return '<span class="badge badge-preparing">⏳ กำลังเตรียม</span>';
 }
 
 // ===== ORDER TIMESTAMP HELPER =====
@@ -329,23 +349,28 @@ async function renderOrders(inOrders) {
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text3);padding:60px 0;font-size:1.1rem">ไม่พบออเดอร์</div>';
     return;
   }
-  grid.innerHTML = orders.map(o => `
+  grid.innerHTML = orders.map(o => {
+    const isDelivery = o.orderType === 'delivery';
+    const deliveryBadge = isDelivery ? '<span class="badge badge-delivery">🛵 Delivery</span>' : '';
+    return `
     <div class="order-card-admin" onclick="openOrderDetail('${o.id}')">
       <div class="order-card-top">
-        <span class="order-card-id">#${String(o.id).slice(-4)} — โต๊ะ ${o.table||'-'}</span>
+        <span class="order-card-id">#${String(o.id).slice(-4)} — ${isDelivery ? '🛵 Delivery' : 'โต๊ะ '+(o.table||'-')}</span>
         <span class="order-card-time">${timeDiff(orderTs(o))}</span>
       </div>
-      ${statusBadge(o.status)}
+      ${statusBadge(o.status)} ${deliveryBadge}
       <div class="order-card-items">${(o.items||[]).map(i=>`${i.emoji||'🍽️'} ${i.name} x${i.qty||1}`).join(' · ')}</div>
+      ${isDelivery && o.deliveryInfo ? `<div class="order-card-delivery">📍 ${o.deliveryInfo.name} — ${o.deliveryInfo.phone}</div>` : ''}
       <div class="order-card-bottom">
-        <span class="order-card-total">${fmtPrice(o.total||0)}</span>
+        <span class="order-card-total">${fmtPrice(o.total||0)}${o.deliveryFee ? ' <small>(รวมค่าส่ง ฿'+o.deliveryFee+')</small>' : ''}</span>
         <div class="order-card-actions">
+          ${o.status==='pending'?`<button class="btn-sm orange" onclick="event.stopPropagation();acceptOrder('${o.id}')">👍 รับออเดอร์</button>`:''}
           ${o.status==='preparing'?`<button class="btn-sm green" onclick="event.stopPropagation();markDone('${o.id}')">✅ เสร็จ</button>`:''}
           <button class="btn-sm red" onclick="event.stopPropagation();deleteOrder('${o.id}')">🗑️</button>
         </div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function filterOrders(f, el) {
@@ -362,6 +387,11 @@ async function markDone(id) {
   showToast('✅ ออเดอร์ #' + String(id).slice(-4) + ' เสร็จแล้ว');
 }
 
+async function acceptOrder(id) {
+  await saveOrderStatus(id, 'preparing');
+  showToast('👍 รับออเดอร์ #' + String(id).slice(-4) + ' แล้ว กำลังเตรียม...');
+}
+
 async function deleteOrder(id) {
   if (!confirm('ลบออเดอร์นี้?')) return;
   await deleteOrderFb(id);
@@ -370,7 +400,7 @@ async function deleteOrder(id) {
 
 async function updatePendingBadge(orders) {
   if (!orders) orders = await getOrders();
-  const pending = orders.filter(o=>o.status==='preparing').length;
+  const pending = orders.filter(o=>o.status==='preparing'||o.status==='pending').length;
   const badge = document.getElementById('pendingBadge');
   if (badge) { badge.textContent = pending; badge.classList.toggle('show', pending>0); }
 }
@@ -384,9 +414,19 @@ async function openOrderDetail(id) {
   document.getElementById('orderDetailBody').innerHTML = `
     <div style="margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
       ${statusBadge(o.status)}
+      ${o.orderType==='delivery'?'<span class="badge badge-delivery">🛵 Delivery</span>':''}
       <span style="color:var(--text3);font-size:.85rem">📅 ${fmtDate(orderTs(o))} เวลา ${fmtTime(orderTs(o))}</span>
       ${o.customerName?`<span style="color:var(--text2);font-size:.85rem">👤 ${o.customerName}</span>`:''}
     </div>
+    ${o.deliveryInfo?`
+    <div style="background:var(--bg);padding:14px 18px;border-radius:12px;margin-bottom:16px;border:1px solid var(--border)">
+      <div style="font-weight:700;margin-bottom:8px;font-size:.9rem">📍 ข้อมูลจัดส่ง</div>
+      <div style="font-size:.85rem;color:var(--text2);line-height:1.8">
+        👤 ${o.deliveryInfo.name}<br>
+        📞 ${o.deliveryInfo.phone}<br>
+        🏠 ${o.deliveryInfo.address}
+      </div>
+    </div>`:''}
     <table class="data-table">
       <thead><tr><th>รายการ</th><th>ราคา/ชิ้น</th><th>จำนวน</th><th>รวม</th></tr></thead>
       <tbody>
@@ -399,12 +439,14 @@ async function openOrderDetail(id) {
           </tr>`).join('')}
       </tbody>
       <tfoot>
+        ${o.deliveryFee?`<tr><td colspan="3" style="text-align:right;padding:8px 16px;color:var(--text3)">🛵 ค่าจัดส่ง</td><td>${fmtPrice(o.deliveryFee)}</td></tr>`:''}
         <tr><td colspan="3" style="text-align:right;font-weight:700;padding:14px 16px">รวมทั้งหมด</td>
         <td style="font-size:1.2rem;font-weight:800;color:var(--accent)">${fmtPrice(o.total||0)}</td></tr>
       </tfoot>
     </table>`;
   document.getElementById('orderDetailFooter').innerHTML = `
     <button class="btn-secondary" onclick="closeOrderDetail()" style="width:auto;margin:0">ปิด</button>
+    ${o.status==='pending'?`<button class="btn-primary" onclick="acceptOrder('${o.id}');closeOrderDetail()">👍 รับออเดอร์</button>`:''}
     ${o.status==='preparing'?`<button class="btn-primary" onclick="markDone('${o.id}');closeOrderDetail()">✅ เสร็จแล้ว</button>`:''}
     <button class="btn-danger" style="width:auto" onclick="deleteOrder('${o.id}');closeOrderDetail()">🗑️ ลบ</button>`;
   document.getElementById('orderDetailModal').classList.add('show');
@@ -802,8 +844,15 @@ function showToast(msg) {
 async function addDemoOrders() {
   const menu = getMenuItems();
   const names = ['สมชาย','สมหญิง','กิตติ','อรนุช','พิมพ์ใจ','วรรณา'];
+  const addresses = [
+    '123/4 ซ.สุขุมวิท 33 กรุงเทพฯ',
+    '56 หมู่ 3 ต.ในเมือง อ.เมือง',
+    '789 ถ.พหลโยธิน แขวงจตุจักร',
+  ];
+  const phones = ['081-234-5678','092-345-6789','063-456-7890'];
   const now = Date.now();
   const promises = [];
+  const statuses = ['pending','pending','pending','preparing','preparing','done','done','done','done','done','done','done'];
 
   for (let i=0; i<12; i++) {
     const itemCount = Math.ceil(Math.random()*3);
@@ -812,27 +861,37 @@ async function addDemoOrders() {
       const qty = Math.ceil(Math.random()*2);
       return { emoji:m.emoji, name:m.name, price:m.price, qty, note:'' };
     });
-    const total = items.reduce((s,i)=>s+i.price*i.qty,0);
+    const isDelivery = Math.random() > 0.7;
+    const deliveryFee = isDelivery ? 30 : 0;
+    const total = items.reduce((s,i)=>s+i.price*i.qty,0) + deliveryFee;
     const newRef = push(ref(db, 'orders'));
     const orderData = {
       id: newRef.key,
-      table: Math.ceil(Math.random()*10),
+      table: isDelivery ? null : Math.ceil(Math.random()*10),
+      orderType: isDelivery ? 'delivery' : 'dinein',
       customerName: names[Math.floor(Math.random()*names.length)],
-      items, total,
-      status: Math.random()>0.4?'done':'preparing',
+      items, total, deliveryFee,
+      status: statuses[i],
       createdAt: new Date(now - Math.floor(Math.random()*7*24*60*60*1000)).toISOString(),
     };
+    if (isDelivery) {
+      orderData.deliveryInfo = {
+        name: names[Math.floor(Math.random()*names.length)],
+        phone: phones[Math.floor(Math.random()*phones.length)],
+        address: addresses[Math.floor(Math.random()*addresses.length)],
+      };
+    }
     promises.push(set(newRef, orderData));
   }
   await Promise.all(promises);
-  showToast('🧪 เพิ่มข้อมูลตัวอย่างแล้ว');
+  showToast('🧪 เพิ่มข้อมูลตัวอย่างแล้ว (มี pending ด้วย)');
 }
 
 // ===== EXPOSE GLOBALS =====
 Object.assign(window, {
   navigateTo, toggleSidebar, closeSidebar,
   toggleNotifications, clearNotifications,
-  filterOrders, searchOrders, markDone, deleteOrder,
+  filterOrders, searchOrders, markDone, deleteOrder, acceptOrder,
   openOrderDetail, closeOrderDetail,
   filterMenu, openMenuModal, closeMenuModal, saveMenuItem, deleteMenuItem,
   searchCustomers, generateTables, copyUrl,
