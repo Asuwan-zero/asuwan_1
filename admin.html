@@ -35,6 +35,10 @@
                 <span class="nav-icon">🍽️</span>
                 <span class="nav-text">จัดการเมนู</span>
             </a>
+            <a class="nav-item" data-page="categories" onclick="navigateTo('categories', this)">
+                <span class="nav-icon">📁</span>
+                <span class="nav-text">จัดการหมวดหมู่</span>
+            </a>
             <a class="nav-item" data-page="customers" onclick="navigateTo('customers', this)">
                 <span class="nav-icon">👥</span>
                 <span class="nav-text">ลูกค้า</span>
@@ -393,6 +397,20 @@
             </div>
         </div>
 
+        <!-- ===== PAGE: CATEGORIES ===== -->
+        <div class="page-content" id="page-categories">
+            <div class="filter-bar">
+                <div class="filter-tabs">
+                    <span style="font-weight:600;color:var(--text2)">📁 หมวดหมู่เมนูทั้งหมด</span>
+                </div>
+                <button class="btn-primary" onclick="openCategoryModal()">➕ เพิ่มหมวดหมู่ใหม่</button>
+            </div>
+
+            <div class="categories-grid" id="categoriesGrid">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+
         <!-- ===== PAGE: SETTINGS ===== -->
         <div class="page-content" id="page-settings">
             <div class="settings-grid">
@@ -434,6 +452,34 @@
         </div>
 
     </main>
+
+    <!-- ===== CATEGORY MODAL ===== -->
+    <div class="modal-overlay" id="categoryModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="categoryModalTitle">เพิ่มหมวดหมู่ใหม่</h3>
+                <button class="modal-close" onclick="closeCategoryModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>อิโมจิหมวดหมู่</label>
+                    <input type="text" id="catEmoji" class="form-input" placeholder="เช่น 🍜">
+                </div>
+                <div class="form-group">
+                    <label>รหัสหมวดหมู่ (ภาษาอังกฤษ)</label>
+                    <input type="text" id="catKey" class="form-input" placeholder="เช่น food, drink, snack">
+                </div>
+                <div class="form-group">
+                    <label>ชื่อหมวดหมู่ (ภาษาไทย)</label>
+                    <input type="text" id="catName" class="form-input" placeholder="เช่น อาหาร, เครื่องดื่ม">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeCategoryModal()">ยกเลิก</button>
+                <button class="btn-primary" onclick="saveCategory()">💾 บันทึก</button>
+            </div>
+        </div>
+    </div>
 
     <!-- ===== MENU MODAL ===== -->
     <div class="modal-overlay" id="menuModal">

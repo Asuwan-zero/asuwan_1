@@ -15,6 +15,7 @@
         <ul>
             <li><a href="#">Home</a></li>
             <li><a href="#menu-section">Menu</a></li>
+            <li><a href="contact.html">Contact</a></li>
             <li><a href="order.html" class="nav-order-link" id="navOrderLink" style="display:none">📦 ติดตามออเดอร์</a></li>
             <li><span class="table-badge" id="tableBadge">📍 โต๊ะ <span id="tableNum"></span></span></li>
             <li>
@@ -304,9 +305,63 @@
         </div>
     </div>
 
+    <!-- ===== FLOATING CHAT WIDGET ===== -->
+    <div class="chat-widget" id="chatWidget">
+        <div class="chat-bubble" id="chatBubble" onclick="toggleChatPopup()">
+            <svg class="chat-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.477 2 2 5.813 2 10.5c0 2.674 1.395 5.07 3.577 6.67-.18 1.48-.914 2.79-1.527 3.68a.5.5 0 00.434.75c2.13-.08 3.97-.84 5.266-1.66.73.13 1.48.21 2.25.21 5.523 0 10-3.813 10-8.5S17.523 2 12 2z" fill="white"/>
+            </svg>
+            <span class="chat-badge-dot"></span>
+        </div>
+        <div class="chat-popup" id="chatPopup">
+            <div class="chat-popup-header">
+                <div class="chat-popup-avatar">☕</div>
+                <div class="chat-popup-info">
+                    <h4>My Café</h4>
+                    <p><span class="online-dot"></span> ออนไลน์อยู่</p>
+                </div>
+                <button class="chat-popup-close" onclick="toggleChatPopup()">✕</button>
+            </div>
+            <div class="chat-popup-body">
+                <div class="chat-msg">
+                    <div class="chat-msg-avatar">☕</div>
+                    <div class="chat-msg-bubble">
+                        <p>สวัสดีค่ะ! 👋 ยินดีต้อนรับสู่ My Café</p>
+                        <p>สอบถามเมนู สั่งอาหาร หรือจองโต๊ะได้เลยนะคะ</p>
+                        <span class="chat-msg-time">เมื่อกี้</span>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-popup-footer">
+                <a href="https://m.me/MyCafeFBPage" target="_blank" class="chat-fb-btn">
+                    📘 แชทผ่าน Facebook Messenger
+                </a>
+                <a href="contact.html" class="chat-contact-btn">
+                    📞 ดูข้อมูลติดต่อทั้งหมด
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== TOAST ===== -->
     <div class="toast" id="toast"></div>
     <script type="module" src="index.js"></script>
+    <script>
+        function toggleChatPopup() {
+            const popup = document.getElementById('chatPopup');
+            const bubble = document.getElementById('chatBubble');
+            popup.classList.toggle('show');
+            bubble.classList.toggle('active');
+        }
+        // Close chat when clicking outside
+        document.addEventListener('click', (e) => {
+            const widget = document.getElementById('chatWidget');
+            if (!widget.contains(e.target)) {
+                document.getElementById('chatPopup').classList.remove('show');
+                document.getElementById('chatBubble').classList.remove('active');
+            }
+        });
+    </script>
 
 </body>
 </html>

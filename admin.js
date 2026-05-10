@@ -144,24 +144,26 @@ function navigateTo(page, el) {
   if (el) el.classList.add('active');
 
   const titles = {
-    dashboard: ['แดชบอร์ด', 'ภาพรวมร้านวันนี้'],
-    orders:    ['จัดการออเดอร์', 'รายการออเดอร์ทั้งหมด'],
-    menu:      ['จัดการเมนู', 'เพิ่ม แก้ไข หรือลบเมนู'],
-    customers: ['ลูกค้า', 'ข้อมูลลูกค้าและประวัติการสั่ง'],
-    stats:     ['สถิติการขาย', 'วิเคราะห์ยอดขายและแนวโน้ม'],
-    tables:    ['จัดการโต๊ะ / QR', 'สร้าง QR Code สำหรับแต่ละโต๊ะ'],
-    settings:  ['ตั้งค่าระบบ', 'ปรับแต่งการทำงานของร้าน'],
+    dashboard:  ['แดชบอร์ด', 'ภาพรวมร้านวันนี้'],
+    orders:     ['จัดการออเดอร์', 'รายการออเดอร์ทั้งหมด'],
+    menu:       ['จัดการเมนู', 'เพิ่ม แก้ไข หรือลบเมนู'],
+    categories: ['จัดการหมวดหมู่', 'เพิ่ม แก้ไข หรือลบหมวดหมู่เมนู'],
+    customers:  ['ลูกค้า', 'ข้อมูลลูกค้าและประวัติการสั่ง'],
+    stats:      ['สถิติการขาย', 'วิเคราะห์ยอดขายและแนวโน้ม'],
+    tables:     ['จัดการโต๊ะ / QR', 'สร้าง QR Code สำหรับแต่ละโต๊ะ'],
+    settings:   ['ตั้งค่าระบบ', 'ปรับแต่งการทำงานของร้าน'],
   };
   const t = titles[page] || [page, ''];
   setText('pageTitle', t[0]);
   setText('pageSubtitle', t[1]);
 
-  if (page === 'dashboard') renderDashboard();
-  if (page === 'orders')    renderOrders();
-  if (page === 'menu')      renderMenuPage();
-  if (page === 'customers') renderCustomers();
-  if (page === 'stats')     renderStats();
-  if (page === 'tables')    generateTables();
+  if (page === 'dashboard')  renderDashboard();
+  if (page === 'orders')     renderOrders();
+  if (page === 'menu')       renderMenuPage();
+  if (page === 'categories') renderCategories();
+  if (page === 'customers')  renderCustomers();
+  if (page === 'stats')      renderStats();
+  if (page === 'tables')     generateTables();
 
   closeSidebar();
 }
@@ -514,6 +516,9 @@ function filterMenu(f, el) {
 }
 
 function catLabel(cat) {
+  const cats = getCategories();
+  const found = cats.find(c => c.key === cat);
+  if (found) return found.emoji + ' ' + found.name;
   return { food:'🍜 อาหาร', snack:'🍤 ขนม', dessert:'🍰 ของหวาน', drink:'🧋 เครื่องดื่ม' }[cat] || cat;
 }
 
@@ -887,6 +892,119 @@ async function addDemoOrders() {
   showToast('🧪 เพิ่มข้อมูลตัวอย่างแล้ว (มี pending ด้วย)');
 }
 
+// ===== CATEGORIES MANAGEMENT =====
+const defaultCategories = [
+  { key:'food',    emoji:'🍜', name:'อาหาร' },
+  { key:'snack',   emoji:'🍤', name:'ขนม' },
+  { key:'dessert', emoji:'🍰', name:'ของหวาน' },
+  { key:'drink',   emoji:'🧋', name:'เครื่องดื่ม' },
+];
+
+function getCategories() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('cafe_categories') || 'null');
+    if (saved && saved.length) return saved;
+  } catch(e) {}
+  return defaultCategories;
+}
+function saveCategories(cats) {
+  localStorage.setItem('cafe_categories', JSON.stringify(cats));
+}
+
+let editingCatKey = null;
+
+function renderCategories() {
+  const grid = document.getElementById('categoriesGrid');
+  if (!grid) return;
+  const cats = getCategories();
+  const menu = getMenuItems();
+  if (!cats.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text3);padding:60px 0">ยังไม่มีหมวดหมู่<br><br><button class="btn-primary" onclick="openCategoryModal()">➕ เพิ่มหมวดหมู่</button></div>';
+    return;
+  }
+  grid.innerHTML = cats.map(c => {
+    const count = menu.filter(m => m.category === c.key).length;
+    return `
+    <div class="category-card-admin">
+      <div class="category-card-emoji">${c.emoji}</div>
+      <div class="category-card-info">
+        <h4>${c.emoji} ${c.name}</h4>
+        <p>รหัส: <strong>${c.key}</strong></p>
+        <p>${count} เมนู</p>
+      </div>
+      <div class="category-card-actions">
+        <button class="btn-sm blue" onclick="openCategoryModal('${c.key}')">✏️ แก้ไข</button>
+        <button class="btn-sm red" onclick="deleteCategory('${c.key}')">🗑️ ลบ</button>
+      </div>
+    </div>`;
+  }).join('');
+  updateMenuCategoryDropdown();
+}
+
+function openCategoryModal(key) {
+  editingCatKey = key || null;
+  document.getElementById('categoryModalTitle').textContent = key ? 'แก้ไขหมวดหมู่' : 'เพิ่มหมวดหมู่ใหม่';
+  if (key) {
+    const cat = getCategories().find(c => c.key === key);
+    if (cat) {
+      document.getElementById('catEmoji').value = cat.emoji;
+      document.getElementById('catKey').value = cat.key;
+      document.getElementById('catName').value = cat.name;
+    }
+  } else {
+    document.getElementById('catEmoji').value = '';
+    document.getElementById('catKey').value = '';
+    document.getElementById('catName').value = '';
+  }
+  document.getElementById('categoryModal').classList.add('show');
+}
+
+function closeCategoryModal() {
+  document.getElementById('categoryModal').classList.remove('show');
+  editingCatKey = null;
+}
+
+function saveCategory() {
+  const emoji = document.getElementById('catEmoji').value.trim() || '📁';
+  const key = document.getElementById('catKey').value.trim().toLowerCase();
+  const name = document.getElementById('catName').value.trim();
+  if (!key) { showToast('⚠️ กรุณาใส่รหัสหมวดหมู่'); return; }
+  if (!name) { showToast('⚠️ กรุณาใส่ชื่อหมวดหมู่'); return; }
+  if (!/^[a-z0-9_]+$/.test(key)) { showToast('⚠️ รหัสต้องเป็นภาษาอังกฤษพิมพ์เล็ก'); return; }
+
+  let cats = getCategories();
+  if (editingCatKey) {
+    const idx = cats.findIndex(c => c.key === editingCatKey);
+    if (idx >= 0) cats[idx] = { key, emoji, name };
+    showToast('✅ แก้ไขหมวดหมู่แล้ว');
+  } else {
+    if (cats.find(c => c.key === key)) { showToast('⚠️ รหัสนี้มีอยู่แล้ว'); return; }
+    cats.push({ key, emoji, name });
+    showToast('✅ เพิ่มหมวดหมู่แล้ว');
+  }
+  saveCategories(cats);
+  closeCategoryModal();
+  renderCategories();
+}
+
+function deleteCategory(key) {
+  const menu = getMenuItems();
+  const count = menu.filter(m => m.category === key).length;
+  if (count > 0) { showToast(`⚠️ ไม่สามารถลบได้ มี ${count} เมนูในหมวดนี้`); return; }
+  if (!confirm('ลบหมวดหมู่นี้?')) return;
+  const cats = getCategories().filter(c => c.key !== key);
+  saveCategories(cats);
+  renderCategories();
+  showToast('🗑️ ลบหมวดหมู่แล้ว');
+}
+
+function updateMenuCategoryDropdown() {
+  const sel = document.getElementById('menuCategory');
+  if (!sel) return;
+  const cats = getCategories();
+  sel.innerHTML = cats.map(c => `<option value="${c.key}">${c.emoji} ${c.name}</option>`).join('');
+}
+
 // ===== EXPOSE GLOBALS =====
 Object.assign(window, {
   navigateTo, toggleSidebar, closeSidebar,
@@ -898,4 +1016,5 @@ Object.assign(window, {
   saveSettings, setTheme, exportData, importData, clearAllData,
   addDemoOrders, updateRevenueChart, renderOrders, renderMenuPage,
   renderCustomers, renderStats,
+  openCategoryModal, closeCategoryModal, saveCategory, deleteCategory, renderCategories,
 });
