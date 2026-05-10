@@ -108,8 +108,34 @@ function stopPendingAlert() {
   if (banner) banner.classList.remove('show');
 }
 
+// ===== AUTH CHECK =====
+function checkAdminAuth() {
+  const session = localStorage.getItem('cafe_admin_session');
+  if (!session) { window.location.href = 'admin-login.html'; return false; }
+  try {
+    const data = JSON.parse(session);
+    if (!data.loggedIn || (Date.now() - data.timestamp > 24 * 60 * 60 * 1000)) {
+      localStorage.removeItem('cafe_admin_session');
+      window.location.href = 'admin-login.html';
+      return false;
+    }
+    return true;
+  } catch(e) {
+    localStorage.removeItem('cafe_admin_session');
+    window.location.href = 'admin-login.html';
+    return false;
+  }
+}
+
+function logoutAdmin() {
+  if (!confirm('ออกจากระบบ?')) return;
+  localStorage.removeItem('cafe_admin_session');
+  window.location.href = 'admin-login.html';
+}
+
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
+  if (!checkAdminAuth()) return;
   loadAdminStore();
   updateTopbarDate();
   setInterval(updateTopbarDate, 60000);
@@ -1017,4 +1043,5 @@ Object.assign(window, {
   addDemoOrders, updateRevenueChart, renderOrders, renderMenuPage,
   renderCustomers, renderStats,
   openCategoryModal, closeCategoryModal, saveCategory, deleteCategory, renderCategories,
+  logoutAdmin,
 });

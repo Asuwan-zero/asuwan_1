@@ -21,6 +21,8 @@ body.light{--bg:#f1f5f9;--bg2:#fff;--bg3:#e2e8f0;--card:#fff;--border:#e2e8f0;--
 .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
 .sidebar-link{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;color:var(--text2);text-decoration:none;font-size:.85rem;transition:all .2s}
 .sidebar-link:hover{background:var(--bg3);color:var(--text)}
+.sidebar-logout{cursor:pointer;color:var(--red);margin-top:4px}
+.sidebar-logout:hover{background:rgba(239,68,68,.1);color:var(--red)}
 
 /* MOBILE */
 .mobile-header{display:none;position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--border);z-index:150;padding:0 16px;align-items:center;justify-content:space-between}

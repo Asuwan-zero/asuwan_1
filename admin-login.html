@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Café — Admin Login</title>
+    <meta name="description" content="เข้าสู่ระบบจัดการร้านกาแฟ My Café Admin Dashboard">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin-login.css">
+</head>
+<body>
+
+    <!-- ===== ANIMATED BACKGROUND ===== -->
+    <div class="bg-animation">
+        <canvas id="particleCanvas"></canvas>
+    </div>
+
+    <!-- ===== FLOATING COFFEE BEANS ===== -->
+    <div class="floating-beans" id="floatingBeans"></div>
+
+    <!-- ===== LOGIN CONTAINER ===== -->
+    <div class="login-wrapper">
+        <div class="login-card" id="loginCard">
+            <!-- Glow Effect -->
+            <div class="card-glow"></div>
+
+            <!-- Brand -->
+            <div class="login-brand">
+                <div class="brand-logo">
+                    <span class="logo-icon">☕</span>
+                    <div class="logo-ring"></div>
+                </div>
+                <h1 class="brand-title">My Café</h1>
+                <p class="brand-sub">Admin Dashboard</p>
+            </div>
+
+            <!-- Login Form -->
+            <form class="login-form" id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group" id="groupUser">
+                    <div class="input-wrapper">
+                        <span class="input-icon">👤</span>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            class="login-input" 
+                            placeholder="ชื่อผู้ใช้"
+                            autocomplete="username"
+                            required
+                        >
+                        <span class="input-focus-ring"></span>
+                    </div>
+                </div>
+
+                <div class="form-group" id="groupPass">
+                    <div class="input-wrapper">
+                        <span class="input-icon">🔒</span>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            class="login-input" 
+                            placeholder="รหัสผ่าน"
+                            autocomplete="current-password"
+                            required
+                        >
+                        <button type="button" class="toggle-password" id="togglePass" onclick="togglePassword()">
+                            👁️
+                        </button>
+                        <span class="input-focus-ring"></span>
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div class="login-error" id="loginError">
+                    <span>⚠️</span>
+                    <span id="errorText">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</span>
+                </div>
+
+                <!-- Remember Me -->
+                <div class="login-options">
+                    <label class="remember-me">
+                        <input type="checkbox" id="rememberMe">
+                        <span class="checkmark"></span>
+                        <span>จดจำการเข้าสู่ระบบ</span>
+                    </label>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-login" id="btnLogin">
+                    <span class="btn-text" id="btnText">🔐 เข้าสู่ระบบ</span>
+                    <span class="btn-loading" id="btnLoading">
+                        <span class="spinner"></span>
+                        กำลังเข้าสู่ระบบ...
+                    </span>
+                </button>
+            </form>
+
+            <!-- Hint -->
+            <div class="login-hint">
+                <p>🔑 ทดสอบ: <strong>admin</strong> / <strong>1234</strong></p>
+            </div>
+
+            <!-- Footer -->
+            <div class="login-footer">
+                <a href="index.html" class="back-link">← กลับหน้าร้าน</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="login-toast" id="loginToast"></div>
+
+    <script>
+        // ===== AUTH CONFIG =====
+        const VALID_USERS = [
+            { username: 'admin', password: '1234' },
+            { username: 'staff', password: 'staff123' },
+        ];
+
+        // Check if already logged in
+        (function checkAuth() {
+            const session = localStorage.getItem('cafe_admin_session');
+            if (session) {
+                try {
+                    const data = JSON.parse(session);
+                    if (data.loggedIn && (Date.now() - data.timestamp < 24 * 60 * 60 * 1000)) {
+                        window.location.href = 'admin.html';
+                        return;
+                    }
+                } catch(e) {}
+            }
+            // Pre-fill username if remembered
+            const remembered = localStorage.getItem('cafe_admin_remember');
+            if (remembered) {
+                document.getElementById('username').value = remembered;
+                document.getElementById('rememberMe').checked = true;
+            }
+            // Show card with animation
+            setTimeout(() => {
+                document.getElementById('loginCard').classList.add('show');
+            }, 300);
+        })();
+
+        // ===== LOGIN HANDLER =====
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('rememberMe').checked;
+
+            // Hide previous error
+            hideError();
+            
+            // Show loading
+            setLoading(true);
+
+            // Simulate network delay for feel
+            setTimeout(() => {
+                const user = VALID_USERS.find(u => u.username === username && u.password === password);
+                
+                if (user) {
+                    // Success!
+                    const session = {
+                        loggedIn: true,
+                        username: user.username,
+                        timestamp: Date.now(),
+                    };
+                    localStorage.setItem('cafe_admin_session', JSON.stringify(session));
+                    
+                    if (remember) {
+                        localStorage.setItem('cafe_admin_remember', username);
+                    } else {
+                        localStorage.removeItem('cafe_admin_remember');
+                    }
+
+                    // Success animation
+                    document.getElementById('loginCard').classList.add('success');
+                    showToast('✅ เข้าสู่ระบบสำเร็จ! กำลังเปลี่ยนหน้า...');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'admin.html';
+                    }, 1200);
+                } else {
+                    // Failed
+                    setLoading(false);
+                    showError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+                    shakeCard();
+                }
+            }, 1000);
+        }
+
+        // ===== UI HELPERS =====
+        function setLoading(isLoading) {
+            const btn = document.getElementById('btnLogin');
+            document.getElementById('btnText').style.display = isLoading ? 'none' : 'flex';
+            document.getElementById('btnLoading').style.display = isLoading ? 'flex' : 'none';
+            btn.disabled = isLoading;
+        }
+
+        function showError(msg) {
+            document.getElementById('errorText').textContent = msg;
+            document.getElementById('loginError').classList.add('show');
+            document.getElementById('groupUser').classList.add('error');
+            document.getElementById('groupPass').classList.add('error');
+        }
+
+        function hideError() {
+            document.getElementById('loginError').classList.remove('show');
+            document.getElementById('groupUser').classList.remove('error');
+            document.getElementById('groupPass').classList.remove('error');
+        }
+
+        function shakeCard() {
+            const card = document.getElementById('loginCard');
+            card.classList.add('shake');
+            setTimeout(() => card.classList.remove('shake'), 600);
+        }
+
+        function togglePassword() {
+            const input = document.getElementById('password');
+            const btn = document.getElementById('togglePass');
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('loginToast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Clear error on input
+        document.querySelectorAll('.login-input').forEach(input => {
+            input.addEventListener('input', hideError);
+            input.addEventListener('focus', () => {
+                input.closest('.input-wrapper').classList.add('focused');
+            });
+            input.addEventListener('blur', () => {
+                input.closest('.input-wrapper').classList.remove('focused');
+            });
+        });
+
+        // ===== PARTICLE CANVAS =====
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let animationId;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class Particle {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.4;
+                this.speedY = (Math.random() - 0.5) * 0.4;
+                this.opacity = Math.random() * 0.5 + 0.1;
+                this.hue = 30 + Math.random() * 20;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${this.hue}, 60%, 70%, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+        function drawLines() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(245, 158, 11, ${0.06 * (1 - dist / 120)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            drawLines();
+            animationId = requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // ===== FLOATING COFFEE BEANS =====
+        const beanEmojis = ['☕', '🫘', '✨', '🌟', '💫'];
+        const beansContainer = document.getElementById('floatingBeans');
+        for (let i = 0; i < 12; i++) {
+            const bean = document.createElement('div');
+            bean.className = 'bean';
+            bean.textContent = beanEmojis[i % beanEmojis.length];
+            bean.style.left = Math.random() * 100 + '%';
+            bean.style.animationDelay = Math.random() * 8 + 's';
+            bean.style.animationDuration = (8 + Math.random() * 12) + 's';
+            bean.style.fontSize = (0.8 + Math.random() * 1.2) + 'rem';
+            bean.style.opacity = 0.08 + Math.random() * 0.12;
+            beansContainer.appendChild(bean);
+        }
+    </script>
+
+</body>
+</html>
