@@ -292,12 +292,103 @@ let qrTimerInterval = null;
 let selectedOrderType = 'dinein';
 const DELIVERY_FEE = 30;
 
+// ===== DELIVERY MAP =====
+let deliveryMap = null;
+let deliveryMarker = null;
+let deliveryLat = null;
+let deliveryLon = null;
+
+function initDeliveryMap() {
+    if (deliveryMap) {
+        // map มีอยู่แล้ว แค่ resize
+        setTimeout(function() { deliveryMap.resize(); }, 50);
+        setTimeout(function() { deliveryMap.resize(); }, 200);
+        return;
+    }
+    if (typeof longdo === 'undefined') { console.warn('Longdo Map API not loaded'); return; }
+
+    // force ให้ element มีขนาดก่อน init
+    var mapEl = document.getElementById('deliveryMap');
+    mapEl.style.width = '100%';
+    mapEl.style.height = '280px';
+
+    
+    deliveryMap = new longdo.Map({
+        placeholder: mapEl,
+        
+        zoom: 12,
+        lastView: false,
+    });
+    deliveryMap.location({ lon: 100.5233, lat: 13.7367 }, true);
+
+    // resize หลาย timing เพื่อให้แน่ใจ
+    setTimeout(function() { deliveryMap.resize(); }, 50);
+    setTimeout(function() { deliveryMap.resize(); }, 200);
+    setTimeout(function() { deliveryMap.resize(); }, 500);
+
+    // Click on map to place marker
+    deliveryMap.Event.bind('click', function() {
+        var loc = deliveryMap.location(longdo.LocationMode.Pointer);
+        if (loc && loc.lat && loc.lon) {
+            placeDeliveryMarker(loc.lat, loc.lon);
+        }
+    });
+
+    // GPS button
+    document.getElementById('deliveryGpsBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var btn = this;
+        btn.textContent = '⏳';
+        btn.disabled = true;
+        if (!navigator.geolocation) {
+            alert('เบราว์เซอร์นี้ไม่รองรับ GPS');
+            btn.textContent = '📍';
+            btn.disabled = false;
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            function(pos) {
+                placeDeliveryMarker(pos.coords.latitude, pos.coords.longitude, 'ตำแหน่งปัจจุบัน');
+                btn.textContent = '✅';
+                setTimeout(function() { btn.textContent = '📍'; btn.disabled = false; }, 2000);
+            },
+            function() {
+                alert('ไม่สามารถดึงตำแหน่งได้ กรุณาอนุญาต GPS');
+                btn.textContent = '📍';
+                btn.disabled = false;
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
+    });
+}
+
+function placeDeliveryMarker(lat, lon, label) {
+    deliveryLat = parseFloat(lat).toFixed(5);
+    deliveryLon = parseFloat(lon).toFixed(5);
+    if (deliveryMarker) deliveryMap.Overlays.remove(deliveryMarker);
+    deliveryMarker = new longdo.Marker(
+        { lon: deliveryLon, lat: deliveryLat },
+        { title: 'ตำแหน่งส่งของ', detail: label || '' }
+    );
+    deliveryMap.Overlays.add(deliveryMarker);
+    deliveryMap.location({ lon: deliveryLon, lat: deliveryLat }, true);
+
+    var pinStatus = document.getElementById('deliveryPinStatus');
+    var pinText = document.getElementById('deliveryPinText');
+    pinText.textContent = label || 'ละติจูด ' + deliveryLat + ', ลองจิจูด ' + deliveryLon;
+    pinStatus.classList.add('pinned');
+}
+
 function selectOrderType(type) {
     selectedOrderType = type;
     document.querySelectorAll('.order-type-card').forEach(c => c.classList.remove('selected'));
     document.getElementById(type === 'delivery' ? 'typeDelivery' : 'typeDineIn').classList.add('selected');
     document.getElementById('dineInSection').style.display = type === 'dinein' ? 'block' : 'none';
     document.getElementById('deliverySection').style.display = type === 'delivery' ? 'block' : 'none';
+    if (type === 'delivery') {
+        setTimeout(function() { initDeliveryMap(); }, 400);
+    }
 }
 
 function openCheckout() {
@@ -321,6 +412,14 @@ function openCheckout() {
     document.getElementById('deliveryName').value = '';
     document.getElementById('deliveryPhone').value = '';
     document.getElementById('deliveryAddress').value = '';
+    deliveryLat = null;
+    deliveryLon = null;
+    deliveryMarker = null;
+    deliveryMap = null;
+    var pinStatus = document.getElementById('deliveryPinStatus');
+    var pinText = document.getElementById('deliveryPinText');
+    if (pinStatus) pinStatus.classList.remove('pinned');
+    if (pinText) pinText.textContent = 'ยังไม่ได้ปักหมุด — กด 📍 หรือคลิกบนแผนที่';
     document.querySelectorAll('.payment-card').forEach(c => c.classList.remove('selected'));
     document.getElementById('checkoutOverlay').classList.add('show');
 }
@@ -503,6 +602,8 @@ async function placeOrder(paymentMethod) {
             name: document.getElementById('deliveryName').value.trim(),
             phone: document.getElementById('deliveryPhone').value.trim(),
             address: document.getElementById('deliveryAddress').value.trim(),
+            lat: deliveryLat || null,
+            lon: deliveryLon || null,
         };
     }
 

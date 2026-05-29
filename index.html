@@ -6,6 +6,7 @@
     <title>My Café — สั่งอาหารออนไลน์</title>
     <meta name="description" content="สั่งอาหารและเครื่องดื่มออนไลน์ ง่าย สะดวก ผ่าน QR Code">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <script src="https://api.longdo.com/map/?key=986a3127ff7d6ab6854f05d51f342631"></script>
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
@@ -196,6 +197,17 @@
                         <input type="text" id="deliveryName" class="delivery-input" placeholder="ชื่อผู้รับ">
                         <input type="tel" id="deliveryPhone" class="delivery-input" placeholder="เบอร์โทรศัพท์">
                         <textarea id="deliveryAddress" class="delivery-input delivery-textarea" placeholder="ที่อยู่สำหรับจัดส่ง เช่น 123/4 ซ.สุขุมวิท..."></textarea>
+                    </div>
+                    <div class="delivery-map-wrapper">
+                        <label class="delivery-map-label">📍 ปักหมุดตำแหน่งจัดส่ง</label>
+                        <div class="delivery-map-container" id="deliveryMapContainer">
+                            <div id="deliveryMap"></div>
+                            <button type="button" class="delivery-gps-btn" id="deliveryGpsBtn" title="ใช้ตำแหน่งปัจจุบัน">📍</button>
+                        </div>
+                        <div class="delivery-pin-status" id="deliveryPinStatus">
+                            <span>🗺️</span>
+                            <span id="deliveryPinText">ยังไม่ได้ปักหมุด — กด 📍 หรือคลิกบนแผนที่</span>
+                        </div>
                     </div>
                     <div class="delivery-fee-notice">
                         <span>🛵</span> ค่าจัดส่ง <strong>฿30</strong>

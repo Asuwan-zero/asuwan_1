@@ -6,6 +6,7 @@
     <title>My Café — ติดตามออเดอร์</title>
     <meta name="description" content="ติดตามสถานะออเดอร์ของคุณแบบเรียลไทม์">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <script src="https://api.longdo.com/map/?key=986a3127ff7d6ab6854f05d51f342631"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -236,6 +237,34 @@
             .progress-dot { width: 34px; height: 34px; font-size: 0.95rem; }
             .progress-line { width: 36px; }
         }
+
+        .order-mini-map-container {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #ebe6e0;
+            margin-top: 8px;
+        }
+        .order-mini-map {
+            width: 100%;
+            height: 200px;
+        }
+        .order-map-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px;
+            background: linear-gradient(135deg, #f5ede5, #ebe0d4);
+            font-size: 0.82rem;
+            color: #6b4c3b;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .order-map-link:hover {
+            background: linear-gradient(135deg, #ebe0d4, #d6c8b8);
+        }
     </style>
 </head>
 <body>
@@ -397,6 +426,15 @@
                         👤 ${order.deliveryInfo.name}<br>
                         📞 ${order.deliveryInfo.phone}<br>
                         🏠 ${order.deliveryInfo.address}
+                        ${order.deliveryInfo.lat && order.deliveryInfo.lon ? `
+                        <div class="order-mini-map-container" style="margin-top:10px">
+                            <div class="order-mini-map" id="orderMap-${String(order.id).slice(-4)}"
+                                 data-lat="${order.deliveryInfo.lat}"
+                                 data-lon="${order.deliveryInfo.lon}"></div>
+                            <a class="order-map-link" href="https://www.google.com/maps?q=${order.deliveryInfo.lat},${order.deliveryInfo.lon}" target="_blank">
+                                🗺️ เปิดใน Google Maps
+                            </a>
+                        </div>` : ''}
                     </div>` : '';
 
                 const deliveryFeeLine = order.deliveryFee ? `
@@ -431,6 +469,29 @@
                 <a href="index.html${tableNumber ? '?table=' + tableNumber : ''}" class="btn-back-menu" style="font-size:0.9rem;padding:10px 22px;">🍽️ สั่งเพิ่ม</a>
             </div>`;
             container.innerHTML = html;
+
+            // Initialize mini maps for delivery orders with coordinates
+            setTimeout(() => {
+                document.querySelectorAll('.order-mini-map').forEach(mapEl => {
+                    const lat = parseFloat(mapEl.dataset.lat);
+                    const lon = parseFloat(mapEl.dataset.lon);
+                    if (!lat || !lon || typeof longdo === 'undefined') return;
+                    try {
+                        const miniMap = new longdo.Map({
+                            placeholder: mapEl,
+                            
+                            zoom: 15,
+                            lastView: false,
+                        });
+                        miniMap.location({ lon: lon, lat: lat }, true);
+                        const marker = new longdo.Marker(
+                            { lon: lon, lat: lat },
+                            { title: 'ตำแหน่งจัดส่ง' }
+                        );
+                        miniMap.Overlays.add(marker);
+                    } catch(e) { console.warn('Mini map init failed:', e); }
+                });
+            }, 500);
         }
 
         // ===== DONE POPUP =====

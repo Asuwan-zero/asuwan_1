@@ -115,50 +115,7 @@
                 </div>
             </div>
 
-            <!-- Contact Form -->
-            <div class="contact-form-section">
-                <div class="form-header">
-                    <div class="form-header-icon">✉️</div>
-                    <h2>ส่งข้อความถึงเรา</h2>
-                    <p>มีคำถาม ข้อเสนอแนะ หรือต้องการสมัครงาน? เขียนถึงเราได้เลย!</p>
-                </div>
-                <form class="contact-form" id="contactForm" onsubmit="submitContactForm(event)">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="contactName">👤 ชื่อ-นามสกุล</label>
-                            <input type="text" id="contactName" placeholder="กรุณากรอกชื่อของคุณ" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="contactEmail">📧 อีเมล</label>
-                            <input type="email" id="contactEmail" placeholder="example@email.com" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="contactPhone">📞 เบอร์โทร</label>
-                            <input type="tel" id="contactPhone" placeholder="081-xxx-xxxx">
-                        </div>
-                        <div class="form-group">
-                            <label for="contactSubject">📋 หัวข้อ</label>
-                            <select id="contactSubject">
-                                <option value="general">สอบถามทั่วไป</option>
-                                <option value="order">เรื่องการสั่งอาหาร</option>
-                                <option value="feedback">ข้อเสนอแนะ</option>
-                                <option value="job">สมัครงาน</option>
-                                <option value="partner">ร่วมเป็นพาร์ทเนอร์</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="contactMessage">💬 ข้อความ</label>
-                        <textarea id="contactMessage" rows="5" placeholder="พิมพ์ข้อความของคุณที่นี่..." required></textarea>
-                    </div>
-                    <button type="submit" class="btn-submit" id="btnSubmit">
-                        <span class="btn-text">📨 ส่งข้อความ</span>
-                        <span class="btn-loading" style="display:none">⏳ กำลังส่ง...</span>
-                    </button>
-                </form>
-            </div>
+
 
         </div>
     </section>
@@ -179,36 +136,7 @@
         </div>
     </footer>
 
-    <!-- ===== TOAST ===== -->
-    <div class="toast" id="toast"></div>
-
     <script>
-        function submitContactForm(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnSubmit');
-            const btnText = btn.querySelector('.btn-text');
-            const btnLoading = btn.querySelector('.btn-loading');
-            
-            btnText.style.display = 'none';
-            btnLoading.style.display = 'inline';
-            btn.disabled = true;
-
-            setTimeout(() => {
-                showToast('✅ ส่งข้อความเรียบร้อยแล้ว! เราจะติดต่อกลับโดยเร็ว');
-                document.getElementById('contactForm').reset();
-                btnText.style.display = 'inline';
-                btnLoading.style.display = 'none';
-                btn.disabled = false;
-            }, 1500);
-        }
-
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.textContent = msg;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-
         // Scroll animations
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -218,7 +146,7 @@
             });
         }, { threshold: 0.1 });
 
-        document.querySelectorAll('.contact-info-card, .contact-form-section, .profile-card').forEach(el => {
+        document.querySelectorAll('.contact-info-card, .profile-card').forEach(el => {
             observer.observe(el);
         });
     </script>
