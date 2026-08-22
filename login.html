@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ทะเบียนลูกค้า</title>
+<style>
+  :root {
+    --ink: #1f3a3a;
+    --ink-soft: #4a6363;
+    --paper: #f3f4ef;
+    --paper-raised: #ffffff;
+    --line: #d8dcd2;
+    --amber: #c17a2e;
+    --amber-dark: #9c5f1e;
+    --error: #b04a3a;
+    --mono: 'JetBrains Mono', 'Courier New', monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Georgia', 'Noto Serif Thai', serif;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+
+  .wrap {
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 16px;
+    margin-bottom: 32px;
+  }
+
+  header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 0.5px;
+  }
+
+  header .tag {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .card {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 28px;
+    margin-bottom: 28px;
+    box-shadow: 0 1px 2px rgba(31,58,58,0.04);
+  }
+
+  .card h2 {
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--ink-soft);
+    margin: 0 0 20px 0;
+    font-family: var(--mono);
+    font-weight: 600;
+  }
+
+  .field {
+    margin-bottom: 16px;
+  }
+
+  .field label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+
+  .field input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    font-size: 15px;
+    font-family: inherit;
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .field input:focus {
+    outline: none;
+    border-color: var(--amber);
+    background: var(--paper-raised);
+  }
+
+  .row {
+    display: flex;
+    gap: 12px;
+  }
+  .row .field { flex: 1; }
+
+  button {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 11px 20px;
+    border-radius: 2px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.05s ease;
+  }
+  button:active { transform: translateY(1px); }
+
+  .btn-primary {
+    background: var(--ink);
+    color: var(--paper-raised);
+  }
+  .btn-primary:hover { background: var(--amber-dark); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--ink-soft);
+    border-color: var(--line);
+  }
+  .btn-secondary:hover { border-color: var(--ink-soft); }
+
+  .status {
+    font-family: var(--mono);
+    font-size: 13px;
+    margin-top: 14px;
+    padding: 10px 12px;
+    border-radius: 2px;
+    display: none;
+  }
+  .status.show { display: block; }
+  .status.ok {
+    background: #eaf1e8;
+    color: #3a6b3a;
+    border: 1px solid #c4dbc0;
+  }
+  .status.err {
+    background: #f5e9e6;
+    color: var(--error);
+    border: 1px solid #e0c2ba;
+  }
+
+  .lookup-row {
+    display: flex;
+    gap: 8px;
+  }
+  .lookup-row input { flex: 1; }
+
+  .record {
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.9;
+    background: var(--paper);
+    border: 1px dashed var(--line);
+    border-radius: 2px;
+    padding: 16px;
+    margin-top: 16px;
+    display: none;
+    white-space: pre-wrap;
+  }
+  .record.show { display: block; }
+  .record .k { color: var(--ink-soft); }
+
+  footer {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 40px;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>ทะเบียนลูกค้า</h1>
+    <span class="tag">Customer Registry</span>
+  </header>
+
+  <!-- เพิ่มลูกค้าใหม่ -->
+  <section class="card">
+    <h2>01 — เพิ่มรายการใหม่</h2>
+
+    <div class="field">
+      <label for="name">ชื่อ-นามสกุล</label>
+      <input type="text" id="name" placeholder="เช่น สมชาย ใจดี">
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="email">อีเมล</label>
+        <input type="email" id="email" placeholder="name@email.com">
+      </div>
+      <div class="field">
+        <label for="phone">เบอร์โทร</label>
+        <input type="tel" id="phone" placeholder="08X-XXX-XXXX">
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="addCustomer()">บันทึกข้อมูล</button>
+
+    <div id="addStatus" class="status"></div>
+  </section>
+
+  <!-- ค้นหา / ดูข้อมูล -->
+  <section class="card">
+    <h2>02 — ค้นหารายการ</h2>
+
+    <div class="lookup-row">
+      <input type="text" id="lookupId" placeholder="วาง ID ลูกค้าที่ได้จากขั้นตอนบันทึก">
+      <button class="btn-secondary" onclick="getCustomer()">ค้นหา</button>
+    </div>
+
+    <div id="lookupStatus" class="status"></div>
+    <div id="record" class="record"></div>
+  </section>
+
+  <!-- แก้ไขข้อมูล -->
+  <section class="card">
+    <h2>03 — แก้ไขรายการ</h2>
+
+    <div class="field">
+      <label for="editId">ID ลูกค้า</label>
+      <input type="text" id="editId" placeholder="ID ที่ต้องการแก้ไข">
+    </div>
+
+    <div class="field">
+      <label for="editPhone">เบอร์โทรใหม่</label>
+      <input type="tel" id="editPhone" placeholder="เว้นว่างถ้าไม่แก้">
+    </div>
+
+    <button class="btn-secondary" onclick="editCustomer()">อัปเดตข้อมูล</button>
+
+    <div id="editStatus" class="status"></div>
+  </section>
+
+  <footer>API_BASE = localhost:3000 · Firebase / Firestore</footer>
+
+</div>
+
+<script>
+  const API_BASE = 'http://localhost:3000';
+
+  function showStatus(el, message, ok) {
+    el.textContent = message;
+    el.className = 'status show ' + (ok ? 'ok' : 'err');
+  }
+
+  async function addCustomer() {
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const statusEl = document.getElementById('addStatus');
+
+    if (!name || !email) {
+      showStatus(statusEl, 'กรุณากรอกชื่อและอีเมล', false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/customers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, phone })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showStatus(statusEl, 'ผิดพลาด: ' + data.error, false);
+        return;
+      }
+
+      showStatus(statusEl, `บันทึกสำเร็จ · ID: ${data.id}`, true);
+      document.getElementById('name').value = '';
+      document.getElementById('email').value = '';
+      document.getElementById('phone').value = '';
+    } catch (err) {
+      showStatus(statusEl, 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ (เช็คว่า node server.js รันอยู่ไหม)', false);
+    }
+  }
+
+  async function getCustomer() {
+    const id = document.getElementById('lookupId').value.trim();
+    const statusEl = document.getElementById('lookupStatus');
+    const recordEl = document.getElementById('record');
+    recordEl.classList.remove('show');
+
+    if (!id) {
+      showStatus(statusEl, 'กรุณาใส่ ID', false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/customers/${id}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        showStatus(statusEl, data.error || 'ไม่พบข้อมูล', false);
+        return;
+      }
+
+      statusEl.classList.remove('show');
+      const esc = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      recordEl.innerHTML =
+        `<span class="k">id</span>     ${esc(data.id)}\n` +
+        `<span class="k">name</span>   ${esc(data.name)}\n` +
+        `<span class="k">email</span>  ${esc(data.email)}\n` +
+        `<span class="k">phone</span>  ${esc(data.phone || '-')}`;
+      recordEl.classList.add('show');
+    } catch (err) {
+      showStatus(statusEl, 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้', false);
+    }
+  }
+
+  async function editCustomer() {
+    const id = document.getElementById('editId').value.trim();
+    const phone = document.getElementById('editPhone').value.trim();
+    const statusEl = document.getElementById('editStatus');
+
+    if (!id) {
+      showStatus(statusEl, 'กรุณาใส่ ID ที่จะแก้ไข', false);
+      return;
+    }
+    if (!phone) {
+      showStatus(statusEl, 'กรุณาใส่เบอร์โทรใหม่', false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/customers/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showStatus(statusEl, data.error || 'อัปเดตไม่สำเร็จ', false);
+        return;
+      }
+
+      showStatus(statusEl, 'อัปเดตสำเร็จแล้ว', true);
+    } catch (err) {
+      showStatus(statusEl, 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้', false);
+    }
+  }
+</script>
+</body>
+</html>

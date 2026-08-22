@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Café — ติดตามออเดอร์</title>
+    <meta name="description" content="ติดตามสถานะออเดอร์ของคุณแบบเรียลไทม์">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <script src="https://api.longdo.com/map/?key=986a3127ff7d6ab6854f05d51f342631"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans Thai', sans-serif;
+            background: linear-gradient(160deg, #faf7f4 0%, #f0e8e0 100%);
+            color: #3d2c2c; min-height: 100vh;
+        }
+
+        nav {
+            background: linear-gradient(135deg, #302b2bee, #4a3f3fee);
+            backdrop-filter: blur(10px);
+            color: #fff; display: flex;
+            justify-content: space-between;
+            padding: 1rem 2rem; align-items: center;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.15);
+        }
+        .logo h1 { font-size: 1.5rem; font-family: 'Playfair Display', serif; }
+        nav ul { list-style: none; display: flex; gap: 24px; align-items: center; }
+        nav ul li a { color: #fff; text-decoration: none; font-size: 15px; transition: opacity 0.2s; }
+        nav ul li a:hover { opacity: 0.75; }
+        .table-badge {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+            padding: 4px 14px; border-radius: 20px;
+            font-size: 13px; font-weight: 600;
+            display: none; align-items: center; gap: 4px;
+        }
+        .table-badge.show { display: flex; }
+
+        .order-container {
+            max-width: 700px; margin: 0 auto;
+            padding: 30px 20px; min-height: calc(100vh - 66px);
+        }
+
+        .page-header { text-align: center; margin-bottom: 30px; }
+        .page-header h1 { font-size: 1.8rem; font-family: 'Playfair Display', serif; margin-bottom: 6px; }
+        .page-header p { color: #7a6a5a; font-size: 0.95rem; }
+
+        /* Live indicator */
+        .live-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #e8f5e9; color: #2e7d32;
+            padding: 4px 12px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .live-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #4caf50;
+            animation: livePulse 1.5s infinite;
+        }
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .order-card {
+            background: #fff; border-radius: 20px;
+            padding: 28px; margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid #ebe6e0;
+            animation: slideUp 0.4s ease both;
+        }
+        @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+        .order-card-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 16px;
+            padding-bottom: 14px; border-bottom: 1px solid #f0ebe5;
+        }
+        .order-id { font-size: 0.8rem; color: #9a856e; font-weight: 500; }
+        .order-time { font-size: 0.8rem; color: #b4a089; }
+
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 16px; border-radius: 20px;
+            font-size: 0.85rem; font-weight: 600;
+        }
+        .status-preparing {
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            color: #e65100; animation: pulse 2s infinite;
+        }
+        .status-done {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            color: #2e7d32;
+        }
+        .status-pending {
+            background: linear-gradient(135deg, #fff8e1, #ffecb3);
+            color: #f57f17; animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.7} }
+
+        .order-table-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: linear-gradient(135deg, #f5ede5, #ebe0d4);
+            padding: 6px 14px; border-radius: 16px;
+            font-size: 0.8rem; font-weight: 600; color: #6b4c3b;
+            margin-bottom: 14px;
+        }
+
+        .order-items { margin: 14px 0; }
+        .order-item {
+            display: flex; align-items: center;
+            gap: 12px; padding: 10px 0;
+            border-bottom: 1px solid #f5f0eb;
+        }
+        .order-item:last-child { border-bottom: none; }
+        .order-item-emoji {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, #f5ede5, #ebe0d4);
+            border-radius: 10px; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 1.3rem; flex-shrink: 0;
+        }
+        .order-item-info { flex: 1; }
+        .order-item-info h4 { font-size: 0.9rem; color: #3d2c2c; }
+        .order-item-note { font-size: 0.75rem; color: #9a856e; font-style: italic; }
+        .order-item-meta { text-align: right; flex-shrink: 0; }
+        .order-item-qty { font-size: 0.75rem; color: #9a856e; }
+        .order-item-price { font-weight: 700; color: #6b4c3b; font-size: 0.9rem; }
+
+        .order-total {
+            display: flex; justify-content: space-between;
+            align-items: center; padding-top: 14px;
+            margin-top: 8px; border-top: 2px solid #ebe6e0;
+        }
+        .order-total span:first-child { font-size: 0.95rem; color: #7a6a5a; }
+        .order-total span:last-child { font-size: 1.3rem; font-weight: 700; color: #3d2c2c; }
+
+        /* Progress Tracker */
+        .progress-tracker {
+            display: flex; align-items: center;
+            justify-content: center; gap: 0;
+            margin: 20px 0 8px; padding: 0 10px;
+        }
+        .progress-step { display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; z-index: 1; }
+        .progress-dot {
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            background: #f0ebe5; color: #b4a089;
+            transition: all 0.5s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .progress-dot.active {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+            color: #fff; box-shadow: 0 4px 15px rgba(230,126,34,0.3);
+            animation: pulse 2s infinite;
+        }
+        .progress-dot.completed {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: #fff; box-shadow: 0 4px 15px rgba(39,174,96,0.3);
+        }
+        .progress-label { font-size: 0.7rem; color: #9a856e; font-weight: 500; text-align: center; white-space: nowrap; }
+        .progress-label.active { color: #e65100; font-weight: 600; }
+        .progress-label.completed { color: #27ae60; font-weight: 600; }
+        .progress-line {
+            width: 80px; height: 3px;
+            background: #ebe6e0; border-radius: 2px;
+            margin-bottom: 22px; transition: background 0.5s ease;
+        }
+        .progress-line.active { background: linear-gradient(90deg, #27ae60, #2ecc71); }
+
+        /* Empty state */
+        .empty-orders { text-align: center; padding: 80px 20px; color: #b4a089; }
+        .empty-orders .empty-icon { font-size: 4rem; margin-bottom: 16px; opacity: 0.6; }
+        .empty-orders h2 { font-size: 1.3rem; font-family: 'Playfair Display', serif; color: #7a6a5a; margin-bottom: 8px; }
+        .empty-orders p { font-size: 0.9rem; margin-bottom: 20px; }
+        .btn-back-menu {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: linear-gradient(135deg, #6b4c3b, #8b5e4a);
+            color: #fff; padding: 14px 28px; border-radius: 14px;
+            text-decoration: none; font-weight: 600; font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        .btn-back-menu:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(107,76,59,0.3); }
+        .btn-clear-orders {
+            display: block; width: 100%; margin-top: 20px;
+            padding: 14px; border: 2px dashed #d4bfad; border-radius: 14px;
+            background: transparent; color: #b4a089; cursor: pointer;
+            font-size: 0.9rem; font-family: 'Noto Sans Thai', sans-serif;
+            transition: all 0.3s ease;
+        }
+        .btn-clear-orders:hover { border-color: #e74c3c; color: #e74c3c; background: #fdf2f2; }
+
+        /* Done popup */
+        .done-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5); display: none;
+            align-items: center; justify-content: center; z-index: 999;
+            backdrop-filter: blur(5px);
+        }
+        .done-overlay.show { display: flex; }
+        .done-card {
+            background: #fff; border-radius: 24px;
+            padding: 40px; text-align: center; max-width: 300px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+        }
+        @keyframes popIn { from{opacity:0;transform:scale(0.7)} to{opacity:1;transform:scale(1)} }
+        .done-icon { font-size: 4rem; margin-bottom: 16px; }
+        .done-card h2 { font-size: 1.5rem; font-family: 'Playfair Display', serif; color: #2e7d32; margin-bottom: 8px; }
+        .done-card p { color: #7a6a5a; margin-bottom: 20px; }
+        .btn-done-close {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: #fff; border: none; padding: 12px 28px;
+            border-radius: 12px; font-size: 1rem; cursor: pointer;
+            font-family: 'Noto Sans Thai', sans-serif; font-weight: 600;
+        }
+
+        /* Loading */
+        .loading-state {
+            text-align: center; padding: 60px 20px; color: #b4a089;
+        }
+        .loading-spinner {
+            width: 40px; height: 40px; border: 3px solid #f0ebe5;
+            border-top-color: #6b4c3b; border-radius: 50%;
+            animation: spin 0.8s linear infinite; margin: 0 auto 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 600px) {
+            nav { padding: 1rem; }
+            .order-container { padding: 20px 16px; }
+            .progress-line { width: 50px; }
+        }
+        @media (max-width: 480px) {
+            .page-header h1 { font-size: 1.4rem; }
+            .progress-dot { width: 34px; height: 34px; font-size: 0.95rem; }
+            .progress-line { width: 36px; }
+        }
+
+        .order-mini-map-container {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #ebe6e0;
+            margin-top: 8px;
+        }
+        .order-mini-map {
+            width: 100%;
+            height: 200px;
+        }
+        .order-map-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px;
+            background: linear-gradient(135deg, #f5ede5, #ebe0d4);
+            font-size: 0.82rem;
+            color: #6b4c3b;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .order-map-link:hover {
+            background: linear-gradient(135deg, #ebe0d4, #d6c8b8);
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo"><h1>☕ My Café</h1></div>
+        <ul>
+            <li><a href="index.html">🍽️ เมนู</a></li>
+            <li><a href="order.html" style="opacity:0.6">📦 ออเดอร์</a></li>
+            <li><span class="table-badge" id="tableBadge">📍 โต๊ะ <span id="tableNum"></span></span></li>
+        </ul>
+    </nav>
+
+    <div class="order-container">
+        <div class="page-header">
+            <h1>📦 ติดตามออเดอร์</h1>
+            <p>ตรวจสอบสถานะออเดอร์ของคุณแบบเรียลไทม์</p>
+        </div>
+        <div style="text-align:center">
+            <span class="live-badge"><span class="live-dot"></span>อัปเดตสดจาก Firebase</span>
+        </div>
+        <div id="ordersContent">
+            <div class="loading-state">
+                <div class="loading-spinner"></div>
+                <p>กำลังโหลดออเดอร์...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="done-overlay" id="doneOverlay">
+        <div class="done-card">
+            <div class="done-icon">🎉</div>
+            <h2>ออเดอร์เสร็จแล้ว!</h2>
+            <p>ขอบคุณที่ใช้บริการ ☕🙏</p>
+            <button class="btn-done-close" onclick="closeDonePopup()">รับทราบ</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db, ref, onValue } from './firebase.js';
+
+        // ===== TABLE SYSTEM =====
+        const urlParams = new URLSearchParams(window.location.search);
+        const tableNumber = urlParams.get('table');
+        if (tableNumber) {
+            document.getElementById('tableBadge').classList.add('show');
+            document.getElementById('tableNum').textContent = tableNumber;
+        }
+
+        // ===== ดึง keys ออเดอร์ของลูกค้าคนนี้ =====
+        // ใช้ sessionStorage ที่ index.js บันทึกไว้ตอนสั่ง
+        // ถ้าไม่มี (เปิดหน้า order.html ตรง) ดึงทุก order ของโต๊ะนั้น
+        const myOrderKeys = JSON.parse(sessionStorage.getItem('myOrderKeys') || '[]');
+
+        // ===== REAL-TIME LISTENER =====
+        let prevDoneCount = -1;
+
+        onValue(ref(db, 'orders'), (snap) => {
+            const container = document.getElementById('ordersContent');
+            if (!snap.exists()) {
+                renderEmpty(container);
+                prevDoneCount = 0;
+                return;
+            }
+
+            const allOrders = snap.val();
+            let orders = [];
+
+            if (myOrderKeys.length > 0) {
+                // แสดงเฉพาะออเดอร์ที่ลูกค้าคนนี้สั่ง
+                orders = myOrderKeys
+                    .map(k => allOrders[k])
+                    .filter(Boolean);
+            } else if (tableNumber) {
+                // fallback: แสดงทุก order ของโต๊ะนี้
+                orders = Object.values(allOrders)
+                    .filter(o => String(o.table) === String(tableNumber));
+            } else {
+                // ไม่มีข้อมูล — แสดง empty
+                renderEmpty(container);
+                return;
+            }
+
+            if (!orders.length) { renderEmpty(container); return; }
+
+            // เรียงใหม่สุดก่อน
+            orders.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            // ตรวจว่ามี order ที่เปลี่ยนเป็น done ใหม่ไหม
+            const doneCount = orders.filter(o => o.status === 'done').length;
+            if (prevDoneCount >= 0 && doneCount > prevDoneCount) {
+                showDonePopup();
+            }
+            prevDoneCount = doneCount;
+
+            renderOrderCards(orders, container);
+        });
+
+        function renderEmpty(container) {
+            container.innerHTML = `
+                <div class="empty-orders">
+                    <div class="empty-icon">📭</div>
+                    <h2>ยังไม่มีออเดอร์</h2>
+                    <p>สั่งอาหารจากเมนูเพื่อเริ่มต้น</p>
+                    <a href="index.html${tableNumber ? '?table=' + tableNumber : ''}" class="btn-back-menu">🍽️ ดูเมนู</a>
+                </div>`;
+        }
+
+        function renderOrderCards(orders, container) {
+            let html = orders.map(order => {
+                const st = order.status || 'pending';
+                const isPending = st === 'pending';
+                const isPreparing = st === 'preparing';
+                const isDone = st === 'done';
+
+                let statusClass, statusText;
+                if (isDone) { statusClass = 'status-done'; statusText = '✅ เสร็จแล้ว'; }
+                else if (isPreparing) { statusClass = 'status-preparing'; statusText = '🍳 กำลังเตรียม'; }
+                else { statusClass = 'status-pending'; statusText = '🔔 รอพนักงานรับออเดอร์'; }
+
+                const orderTime = new Date(order.createdAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                const isDelivery = order.orderType === 'delivery';
+
+                const progressHTML = `
+                    <div class="progress-tracker">
+                        <div class="progress-step">
+                            <div class="progress-dot completed">✓</div>
+                            <span class="progress-label completed">สั่งแล้ว</span>
+                        </div>
+                        <div class="progress-line ${isPreparing || isDone ? 'active' : ''}"></div>
+                        <div class="progress-step">
+                            <div class="progress-dot ${isPreparing ? 'active' : isDone ? 'completed' : ''}">${isPending ? '⏳' : isPreparing ? '🍳' : '✓'}</div>
+                            <span class="progress-label ${isPreparing ? 'active' : isDone ? 'completed' : ''}">${isPending ? 'รอรับ' : isPreparing ? 'กำลังทำ' : 'ทำเสร็จ'}</span>
+                        </div>
+                        <div class="progress-line ${isDone ? 'active' : ''}"></div>
+                        <div class="progress-step">
+                            <div class="progress-dot ${isDone ? 'completed' : ''}">${isDone ? '✓' : '🔔'}</div>
+                            <span class="progress-label ${isDone ? 'completed' : ''}">${isDelivery ? 'จัดส่ง' : 'พร้อมเสิร์ฟ'}</span>
+                        </div>
+                    </div>`;
+
+                const itemsHTML = (order.items||[]).map(item => `
+                    <div class="order-item">
+                        <div class="order-item-emoji">${item.emoji}</div>
+                        <div class="order-item-info">
+                            <h4>${item.name}</h4>
+                            ${item.note ? `<div class="order-item-note">📝 ${item.note}</div>` : ''}
+                        </div>
+                        <div class="order-item-meta">
+                            <div class="order-item-qty">x${item.qty}</div>
+                            <div class="order-item-price">฿${item.price * item.qty}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+                const deliveryHTML = isDelivery && order.deliveryInfo ? `
+                    <div style="background:#faf7f4;padding:12px 16px;border-radius:12px;margin:8px 0;border:1px solid #ebe6e0;font-size:.85rem;color:#5a4535;line-height:1.7">
+                        <strong>🛵 จัดส่งถึงบ้าน</strong><br>
+                        👤 ${order.deliveryInfo.name}<br>
+                        📞 ${order.deliveryInfo.phone}<br>
+                        🏠 ${order.deliveryInfo.address}
+                        ${order.deliveryInfo.lat && order.deliveryInfo.lon ? `
+                        <div class="order-mini-map-container" style="margin-top:10px">
+                            <div class="order-mini-map" id="orderMap-${String(order.id).slice(-4)}"
+                                 data-lat="${order.deliveryInfo.lat}"
+                                 data-lon="${order.deliveryInfo.lon}"></div>
+                            <a class="order-map-link" href="https://www.google.com/maps?q=${order.deliveryInfo.lat},${order.deliveryInfo.lon}" target="_blank">
+                                🗺️ เปิดใน Google Maps
+                            </a>
+                        </div>` : ''}
+                    </div>` : '';
+
+                const deliveryFeeLine = order.deliveryFee ? `
+                    <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:.85rem;color:#9a856e;border-bottom:1px dashed #ebe6e0">
+                        <span>🛵 ค่าจัดส่ง</span><span>฿${order.deliveryFee}</span>
+                    </div>` : '';
+
+                return `
+                    <div class="order-card">
+                        <div class="order-card-header">
+                            <span class="order-id">ออเดอร์ #${String(order.id).slice(-4)}</span>
+                            <span class="order-time">🕐 ${orderTime}</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                            ${order.table ? `<span class="order-table-badge">📍 โต๊ะ ${order.table}</span>` : ''}
+                            ${isDelivery ? '<span class="order-table-badge">🛵 Delivery</span>' : ''}
+                        </div>
+                        ${progressHTML}
+                        ${deliveryHTML}
+                        <div class="order-items">${itemsHTML}</div>
+                        ${deliveryFeeLine}
+                        <div class="order-total">
+                            <span>รวมทั้งหมด</span>
+                            <span>฿${order.total}</span>
+                        </div>
+                    </div>`;
+            }).join('');
+
+
+            html += `<div style="text-align:center;margin-top:10px;">
+                <a href="index.html${tableNumber ? '?table=' + tableNumber : ''}" class="btn-back-menu" style="font-size:0.9rem;padding:10px 22px;">🍽️ สั่งเพิ่ม</a>
+            </div>`;
+            container.innerHTML = html;
+
+            // Initialize mini maps for delivery orders with coordinates
+            setTimeout(() => {
+                document.querySelectorAll('.order-mini-map').forEach(mapEl => {
+                    const lat = parseFloat(mapEl.dataset.lat);
+                    const lon = parseFloat(mapEl.dataset.lon);
+                    if (!lat || !lon || typeof longdo === 'undefined') return;
+                    try {
+                        const miniMap = new longdo.Map({
+                            placeholder: mapEl,
+                            
+                            zoom: 15,
+                            lastView: false,
+                        });
+                        miniMap.location({ lon: lon, lat: lat }, true);
+                        const marker = new longdo.Marker(
+                            { lon: lon, lat: lat },
+                            { title: 'ตำแหน่งจัดส่ง' }
+                        );
+                        miniMap.Overlays.add(marker);
+                    } catch(e) { console.warn('Mini map init failed:', e); }
+                });
+            }, 500);
+        }
+
+        // ===== DONE POPUP =====
+        function showDonePopup() {
+            document.getElementById('doneOverlay').classList.add('show');
+        }
+        window.closeDonePopup = function() {
+            document.getElementById('doneOverlay').classList.remove('show');
+        };
+    </script>
+
+</body>
+</html>

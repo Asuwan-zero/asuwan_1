@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Café — สั่งอาหารออนไลน์</title>
+    <meta name="description" content="สั่งอาหารและเครื่องดื่มออนไลน์ ง่าย สะดวก ผ่าน QR Code">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://api.longdo.com/map/?key=986a3127ff7d6ab6854f05d51f342631"></script>
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+
+    <nav>
+        <div class="logo">
+            <h1>☕ My Café</h1>
+        </div>
+        <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#menu-section">Menu</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="order.html" class="nav-order-link" id="navOrderLink" style="display:none">📦 ติดตามออเดอร์</a>
+            </li>
+            <li><span class="table-badge" id="tableBadge">📍 โต๊ะ <span id="tableNum"></span></span></li>
+            <li>
+                <span class="nav-cart" id="cartIcon" onclick="toggleCart()">
+                    🛒
+                    <span class="cart-badge" id="cartBadge">0</span>
+                </span>
+            </li>
+        </ul>
+    </nav>
+
+    <section>
+        <div class="hero-banner">
+            <h1>Welcome to My Café</h1>
+            <p>Discover our delicious menu and cozy atmosphere.</p>
+            <button onclick="document.getElementById('menu-section').scrollIntoView({behavior:'smooth'})">🍽️
+                ดูเมนู</button>
+        </div>
+    </section>
+
+    <section class="second-section">
+
+        <!-- ===== RECOMMENDED PRODUCTS ===== -->
+        <header>
+            <h2>✨ Recommended Products</h2>
+        </header>
+        <div class="slider-wrapper">
+            <button class="arrow-btn arrow-left" onclick="slideTop(-1)">&#8592;</button>
+            <div class="slider-track" id="topTrack">
+                <!-- Populated dynamically from DB -->
+            </div>
+            <button class="arrow-btn arrow-right" onclick="slideTop(1)">&#8594;</button>
+        </div>
+
+        <!-- ===== OUR MENU TABS ===== -->
+        <section class="Menu-section" id="menu-section">
+            <h4>🍽️ Our Menu</h4>
+            <div class="menu-items" id="menuTabs">
+                <!-- Populated dynamically from DB categories -->
+            </div>
+        </section>
+
+        <!-- ===== SEARCH BAR ===== -->
+        <div class="search-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" id="searchInput" placeholder="ค้นหาเมนู..." oninput="searchMenu()">
+            <button class="search-clear" id="searchClear" onclick="clearSearch()" style="display:none">✕</button>
+        </div>
+
+        <!-- ===== CATEGORY GRID (แสดงต่อด้านล่าง) ===== -->
+        <div class="category-grid-wrapper">
+            <div class="category-grid" id="catGrid"></div>
+            <div class="no-results" id="noResults" style="display:none">
+                <span class="no-results-icon">🔍</span>
+                <p>ไม่พบเมนูที่ค้นหา</p>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ===== CUSTOMIZATION MODAL ===== -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-emoji" id="modalEmoji"></span>
+                <div class="modal-info">
+                    <h3 id="modalName"></h3>
+                    <p class="modal-desc" id="modalDesc"></p>
+                    <span class="modal-price" id="modalPrice"></span>
+                </div>
+            </div>
+
+            <div class="modal-group">
+                <label class="group-title">📝 ต้องการรายละเอียดอะไรบ้าง</label>
+                <textarea class="modal-note" id="modalNote"
+                    placeholder="เช่น ไม่ใส่น้ำแข็ง, เผ็ดน้อย, หวานน้อย, เพิ่มไข่มุก..."></textarea>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+                <button class="btn-confirm" onclick="confirmAdd()">🛒 เพิ่มลงตะกร้า</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CART SIDEBAR ===== -->
+    <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+    <div class="cart-panel" id="cartPanel">
+        <div class="cart-header">
+            <h2>🧺 ตะกร้า</h2>
+            <button class="cart-close" onclick="toggleCart()">✕</button>
+        </div>
+        <div class="cart-body" id="cartBody"></div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>ราคารวม</span>
+                <span id="cartTotalPrice">฿0</span>
+            </div>
+            <button class="btn-order" id="btnOrder" onclick="openCheckout()" disabled>🛒 สั่งเลย</button>
+        </div>
+    </div>
+
+    <!-- ===== CHECKOUT MODAL ===== -->
+    <div class="checkout-overlay" id="checkoutOverlay" onclick="closeCheckoutOutside(event)">
+        <div class="checkout-modal">
+            <div class="checkout-header">
+                <h2>📋 ยืนยันการสั่ง</h2>
+                <button class="checkout-close" onclick="closeCheckout()">✕</button>
+            </div>
+
+            <!-- Step 1: Order Type + Details -->
+            <div class="checkout-step" id="checkoutStep1">
+                <div class="step-indicator">
+                    <div class="step-dot active">1</div>
+                    <div class="step-line"></div>
+                    <div class="step-dot">2</div>
+                </div>
+
+                <!-- Order Type Selection -->
+                <div class="checkout-section">
+                    <div class="section-icon">🛍️</div>
+                    <h3>ประเภทการสั่ง</h3>
+                    <p class="section-desc">เลือกวิธีรับอาหาร</p>
+                    <div class="order-type-options">
+                        <div class="order-type-card selected" id="typeDineIn" onclick="selectOrderType('dinein')">
+                            <div class="order-type-icon">🪑</div>
+                            <div class="order-type-info">
+                                <h4>ทานที่ร้าน</h4>
+                                <p>เลือกโต๊ะและสั่งเลย</p>
+                            </div>
+                            <div class="order-type-check"></div>
+                        </div>
+                        <div class="order-type-card" id="typeDelivery" onclick="selectOrderType('delivery')">
+                            <div class="order-type-icon">🛵</div>
+                            <div class="order-type-info">
+                                <h4>สั่งจากบ้าน</h4>
+                                <p>จัดส่งถึงที่ +฿30</p>
+                            </div>
+                            <div class="order-type-check"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dine-in: Table Selection -->
+                <div class="checkout-section" id="dineInSection">
+                    <div class="section-icon">🪑</div>
+                    <h3>หมายเลขโต๊ะ</h3>
+                    <p class="section-desc">กรุณาระบุหมายเลขโต๊ะเพื่อพนักงานจะได้เสิร์ฟถูกโต๊ะ</p>
+                    <div class="table-input-wrapper">
+                        <input type="number" id="checkoutTableNum" class="table-input" min="1" max="99"
+                            placeholder="เช่น 1, 2, 3...">
+                    </div>
+                    <div class="table-grid" id="tableGrid">
+                        <button class="table-btn" onclick="selectTable(1)">1</button>
+                        <button class="table-btn" onclick="selectTable(2)">2</button>
+                        <button class="table-btn" onclick="selectTable(3)">3</button>
+                        <button class="table-btn" onclick="selectTable(4)">4</button>
+                        <button class="table-btn" onclick="selectTable(5)">5</button>
+                        <button class="table-btn" onclick="selectTable(6)">6</button>
+                        <button class="table-btn" onclick="selectTable(7)">7</button>
+                        <button class="table-btn" onclick="selectTable(8)">8</button>
+                        <button class="table-btn" onclick="selectTable(9)">9</button>
+                        <button class="table-btn" onclick="selectTable(10)">10</button>
+                        <button class="table-btn" onclick="selectTable(11)">11</button>
+                        <button class="table-btn" onclick="selectTable(12)">12</button>
+                    </div>
+                </div>
+
+                <!-- Delivery: Address Form -->
+                <div class="checkout-section" id="deliverySection" style="display:none">
+                    <div class="section-icon">📍</div>
+                    <h3>ข้อมูลการจัดส่ง</h3>
+                    <p class="section-desc">กรุณากรอกข้อมูลเพื่อจัดส่งอาหารถึงบ้าน</p>
+                    <div class="delivery-form">
+                        <input type="text" id="deliveryName" class="delivery-input" placeholder="ชื่อผู้รับ">
+                        <input type="tel" id="deliveryPhone" class="delivery-input" placeholder="เบอร์โทรศัพท์">
+                        <textarea id="deliveryAddress" class="delivery-input delivery-textarea"
+                            placeholder="ที่อยู่สำหรับจัดส่ง เช่น 123/4 ซ.สุขุมวิท..."></textarea>
+                    </div>
+                    <div class="delivery-map-wrapper">
+                        <label class="delivery-map-label">📍 ปักหมุดตำแหน่งจัดส่ง</label>
+                        <div class="delivery-map-container" id="deliveryMapContainer">
+                            <div id="deliveryMap"></div>
+                            <button type="button" class="delivery-gps-btn" id="deliveryGpsBtn"
+                                title="ใช้ตำแหน่งปัจจุบัน">📍</button>
+                        </div>
+                        <div class="delivery-pin-status" id="deliveryPinStatus">
+                            <span>🗺️</span>
+                            <span id="deliveryPinText">ยังไม่ได้ปักหมุด — กด 📍 หรือคลิกบนแผนที่</span>
+                        </div>
+                    </div>
+                    <div class="delivery-fee-notice">
+                        <span>🛵</span> ค่าจัดส่ง <strong>฿30</strong>
+                    </div>
+                </div>
+
+                <div class="checkout-actions">
+                    <button class="btn-cancel" onclick="closeCheckout()">ยกเลิก</button>
+                    <button class="btn-next" id="btnNextStep" onclick="goToPaymentStep()">ถัดไป →</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Payment Method -->
+            <div class="checkout-step" id="checkoutStep2" style="display:none">
+                <div class="step-indicator">
+                    <div class="step-dot done">✓</div>
+                    <div class="step-line active"></div>
+                    <div class="step-dot active">2</div>
+                </div>
+                <div class="checkout-section">
+                    <div class="section-icon">💳</div>
+                    <h3>เลือกวิธีชำระเงิน</h3>
+                    <p class="section-desc">ยอดรวม: <strong id="checkoutTotal">฿0</strong></p>
+
+                    <div class="payment-options">
+                        <div class="payment-card" id="payQR" onclick="selectPayment('qr')">
+                            <div class="payment-icon">📱</div>
+                            <div class="payment-info">
+                                <h4>สแกนจ่าย (QR Code)</h4>
+                                <p>ชำระผ่าน Mobile Banking / PromptPay</p>
+                            </div>
+                            <div class="payment-check"></div>
+                        </div>
+                        <div class="payment-card" id="payCash" onclick="selectPayment('cash')">
+                            <div class="payment-icon">💵</div>
+                            <div class="payment-info">
+                                <h4>จ่ายเงินสด</h4>
+                                <p>ชำระเงินสดที่เคาน์เตอร์</p>
+                            </div>
+                            <div class="payment-check"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="checkout-summary">
+                    <h4>📦 สรุปรายการ</h4>
+                    <div id="checkoutItemsList"></div>
+                    <div class="summary-item delivery-fee-line" id="deliveryFeeLine" style="display:none">
+                        <span class="summary-item-name">🛵 ค่าจัดส่ง</span>
+                        <span>฿30</span>
+                    </div>
+                    <div class="checkout-summary-total">
+                        <span>รวมทั้งหมด</span>
+                        <span id="checkoutSummaryTotal">฿0</span>
+                    </div>
+                </div>
+
+                <div class="checkout-actions">
+                    <button class="btn-back" onclick="goBackToTable()">← ย้อนกลับ</button>
+                    <button class="btn-confirm-order" id="btnConfirmOrder" onclick="confirmCheckout()" disabled>✅
+                        ยืนยันสั่งอาหาร</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== QR PAYMENT OVERLAY ===== -->
+    <div class="qr-overlay" id="qrOverlay">
+        <div class="qr-modal">
+            <div class="qr-header">
+                <h2>📱 สแกนจ่ายเงิน</h2>
+                <button class="checkout-close" onclick="closeQRPayment()">✕</button>
+            </div>
+            <div class="qr-body">
+                <div class="qr-amount">
+                    <span>ยอดชำระ</span>
+                    <span class="qr-total" id="qrTotal">฿0</span>
+                </div>
+                <div class="qr-code-container" id="qrCodeContainer">
+                    <canvas id="qrCanvas"></canvas>
+                </div>
+                <div class="qr-info">
+                    <p>🏦 PromptPay: <strong>xxx-xxx-xxxx</strong></p>
+                    <p>👤 ชื่อบัญชี: <strong>My Café</strong></p>
+                </div>
+                <div class="qr-timer">
+                    <span>⏱️ กรุณาชำระภายใน</span>
+                    <span class="timer-count" id="qrTimer">05:00</span>
+                </div>
+                <div class="qr-actions">
+                    <button class="btn-qr-done" onclick="qrPaymentDone()">✅ ชำระเรียบร้อยแล้ว</button>
+                    <button class="btn-qr-cancel" onclick="closeQRPayment()">ยกเลิก</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ORDER STATUS OVERLAY ===== -->
+    <div class="order-overlay" id="orderOverlay">
+        <div class="order-card" id="orderCard">
+            <div class="order-status-icon" id="orderIcon">⏳</div>
+            <h2 id="orderTitle">กำลังเตรียมออเดอร์...</h2>
+            <p id="orderSubtitle">กรุณารอสักครู่</p>
+            <div class="order-table-info" id="orderTableInfo" style="display:none"></div>
+            <div class="order-items-list" id="orderItemsList"></div>
+            <button class="btn-close-order" id="btnCloseOrder" onclick="closeOrderStatus()"
+                style="display:none">ปิด</button>
+        </div>
+    </div>
+
+    <!-- ===== FLOATING CHAT WIDGET ===== -->
+    <div class="chat-widget" id="chatWidget">
+        <div class="chat-bubble" id="chatBubble" onclick="toggleChatPopup()">
+            <svg class="chat-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M12 2C6.477 2 2 5.813 2 10.5c0 2.674 1.395 5.07 3.577 6.67-.18 1.48-.914 2.79-1.527 3.68a.5.5 0 00.434.75c2.13-.08 3.97-.84 5.266-1.66.73.13 1.48.21 2.25.21 5.523 0 10-3.813 10-8.5S17.523 2 12 2z"
+                    fill="white" />
+            </svg>
+            <span class="chat-badge-dot"></span>
+        </div>
+        <div class="chat-popup" id="chatPopup">
+            <div class="chat-popup-header">
+                <div class="chat-popup-avatar">☕</div>
+                <div class="chat-popup-info">
+                    <h4>My Café</h4>
+                    <p><span class="online-dot"></span> ออนไลน์อยู่</p>
+                </div>
+                <button class="chat-popup-close" onclick="toggleChatPopup()">✕</button>
+            </div>
+            <div class="chat-popup-body">
+                <div class="chat-msg">
+                    <div class="chat-msg-avatar">☕</div>
+                    <div class="chat-msg-bubble">
+                        <p>สวัสดีค่ะ! 👋 ยินดีต้อนรับสู่ My Café</p>
+                        <p>สอบถามเมนู สั่งอาหาร หรือจองโต๊ะได้เลยนะคะ</p>
+                        <span class="chat-msg-time">เมื่อกี้</span>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-popup-footer">
+                <a href="https://m.me/MyCafeFBPage" target="_blank" class="chat-fb-btn">
+                    📘 แชทผ่าน Facebook Messenger
+                </a>
+                <a href="contact.html" class="chat-contact-btn">
+                    📞 ดูข้อมูลติดต่อทั้งหมด
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast"></div>
+    <script type="module" src="index.js"></script>
+    <script>
+        function toggleChatPopup() {
+            const popup = document.getElementById('chatPopup');
+            const bubble = document.getElementById('chatBubble');
+            popup.classList.toggle('show');
+            bubble.classList.toggle('active');
+        }
+        // Close chat when clicking outside
+        document.addEventListener('click', (e) => {
+            const widget = document.getElementById('chatWidget');
+            if (!widget.contains(e.target)) {
+                document.getElementById('chatPopup').classList.remove('show');
+                document.getElementById('chatBubble').classList.remove('active');
+            }
+        });
+    </script>
+
+</body>
+
+</html>
