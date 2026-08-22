@@ -198,7 +198,6 @@ function navigateTo(page, el) {
     tables:     ['จัดการโต๊ะ / QR', 'สร้าง QR Code สำหรับแต่ละโต๊ะ'],
     settings:   ['ตั้งค่าระบบ', 'ปรับแต่งการทำงานของร้าน'],
   };
-
   const t = titles[page] || [page, ''];
   setText('pageTitle', t[0]);
   setText('pageSubtitle', t[1]);

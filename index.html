@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="th">
+<<<<<<< HEAD
 
+=======
+>>>>>>> 66873d87a0fe8b698c5dfa76bb54ca6bc4a1743f
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Café — สั่งอาหารออนไลน์</title>
     <meta name="description" content="สั่งอาหารและเครื่องดื่มออนไลน์ ง่าย สะดวก ผ่าน QR Code">
+<<<<<<< HEAD
     <link
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
         rel="stylesheet">
@@ -19,12 +23,26 @@
         <div class="logo">
             <h1>☕ My Café</h1>
         </div>
+=======
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <script src="https://api.longdo.com/map/?key=986a3127ff7d6ab6854f05d51f342631"></script>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+    <nav>
+        <div class="logo"><h1>☕ My Café</h1></div>
+>>>>>>> 66873d87a0fe8b698c5dfa76bb54ca6bc4a1743f
         <ul>
             <li><a href="#">Home</a></li>
             <li><a href="#menu-section">Menu</a></li>
             <li><a href="contact.html">Contact</a></li>
+<<<<<<< HEAD
             <li><a href="order.html" class="nav-order-link" id="navOrderLink" style="display:none">📦 ติดตามออเดอร์</a>
             </li>
+=======
+            <li><a href="order.html" class="nav-order-link" id="navOrderLink" style="display:none">📦 ติดตามออเดอร์</a></li>
+>>>>>>> 66873d87a0fe8b698c5dfa76bb54ca6bc4a1743f
             <li><span class="table-badge" id="tableBadge">📍 โต๊ะ <span id="tableNum"></span></span></li>
             <li>
                 <span class="nav-cart" id="cartIcon" onclick="toggleCart()">
@@ -39,14 +57,19 @@
         <div class="hero-banner">
             <h1>Welcome to My Café</h1>
             <p>Discover our delicious menu and cozy atmosphere.</p>
+<<<<<<< HEAD
             <button onclick="document.getElementById('menu-section').scrollIntoView({behavior:'smooth'})">🍽️
                 ดูเมนู</button>
+=======
+            <button onclick="document.getElementById('menu-section').scrollIntoView({behavior:'smooth'})">🍽️ ดูเมนู</button>
+>>>>>>> 66873d87a0fe8b698c5dfa76bb54ca6bc4a1743f
         </div>
     </section>
 
     <section class="second-section">
 
         <!-- ===== RECOMMENDED PRODUCTS ===== -->
+<<<<<<< HEAD
         <header>
             <h2>✨ Recommended Products</h2>
         </header>
@@ -54,6 +77,18 @@
             <button class="arrow-btn arrow-left" onclick="slideTop(-1)">&#8592;</button>
             <div class="slider-track" id="topTrack">
                 <!-- Populated dynamically from DB -->
+=======
+        <header><h2>✨ Recommended Products</h2></header>
+        <div class="slider-wrapper">
+            <button class="arrow-btn arrow-left" onclick="slideTop(-1)">&#8592;</button>
+            <div class="slider-track" id="topTrack">
+                <div class="product"><div class="product-img">🍜</div><h3>ข้าวผัด</h3><p>ข้าวผัดกระเพราไก่ไข่ดาว</p><span class="price">฿120</span><button class="add-to-cart" onclick="openModal('🍜','ข้าวผัด','ข้าวผัดกระเพราไก่ไข่ดาว',120)">🛒 เพิ่มลงตะกร้า</button></div>
+                <div class="product"><div class="product-img">🍛</div><h3>แกงเขียวหวาน</h3><p>แกงเขียวหวานไก่ใส่มะเขือ</p><span class="price">฿150</span><button class="add-to-cart" onclick="openModal('🍛','แกงเขียวหวาน','แกงเขียวหวานไก่ใส่มะเขือ',150)">🛒 เพิ่มลงตะกร้า</button></div>
+                <div class="product"><div class="product-img">🍣</div><h3>ต้มยำกุ้ง</h3><p>ต้มยำกุ้งน้ำข้น</p><span class="price">฿200</span><button class="add-to-cart" onclick="openModal('🍣','ต้มยำกุ้ง','ต้มยำกุ้งน้ำข้น',200)">🛒 เพิ่มลงตะกร้า</button></div>
+                <div class="product"><div class="product-img">🍱</div><h3>ผัดไทย</h3><p>ผัดไทยกุ้งสด</p><span class="price">฿180</span><button class="add-to-cart" onclick="openModal('🍱','ผัดไทย','ผัดไทยกุ้งสด',180)">🛒 เพิ่มลงตะกร้า</button></div>
+                <div class="product"><div class="product-img">🍲</div><h3>ข้าวมันไก่</h3><p>ข้าวมันไก่ต้มซีอิ๊ว</p><span class="price">฿130</span><button class="add-to-cart" onclick="openModal('🍲','ข้าวมันไก่','ข้าวมันไก่ต้มซีอิ๊ว',130)">🛒 เพิ่มลงตะกร้า</button></div>
+                <div class="product"><div class="product-img">🥗</div><h3>ลาบหมู</h3><p>ลาบหมูสไตล์อีสาน</p><span class="price">฿110</span><button class="add-to-cart" onclick="openModal('🥗','ลาบหมู','ลาบหมูสไตล์อีสาน',110)">🛒 เพิ่มลงตะกร้า</button></div>
+>>>>>>> 66873d87a0fe8b698c5dfa76bb54ca6bc4a1743f
             </div>
             <button class="arrow-btn arrow-right" onclick="slideTop(1)">&#8594;</button>
         </div>
@@ -61,8 +96,16 @@
         <!-- ===== OUR MENU TABS ===== -->
         <section class="Menu-section" id="menu-section">
             <h4>🍽️ Our Menu</h4>
+<<<<<<< HEAD
             <div class="menu-items" id="menuTabs">
                 <!-- Populated dynamically from DB categories -->
+=======
+            <div class="menu-items">
+                <div class="menu-tab active" onclick="switchCategory('food', this)"><h3>🍜 เมนูอาหาร</h3></div>
+                <div class="menu-tab"        onclick="switchCategory('snack', this)"><h3>🍤 เมนูขนม</h3></div>
+                <div class="menu-tab"        onclick="switchCategory('dessert', this)"><h3>🍰 เมนูของหวาน</h3></div>
+                <div class="menu-tab"        onclick="switchCategory('drink', this)"><h3>🧋 เมนูเครื่องดื่ม</h3></div>
+>>>>>>> 66873d87a0fe8b698c5dfa76bb54ca6bc4a1743f
             </div>
         </section>
 
@@ -98,8 +141,12 @@
 
             <div class="modal-group">
                 <label class="group-title">📝 ต้องการรายละเอียดอะไรบ้าง</label>
+<<<<<<< HEAD
                 <textarea class="modal-note" id="modalNote"
                     placeholder="เช่น ไม่ใส่น้ำแข็ง, เผ็ดน้อย, หวานน้อย, เพิ่มไข่มุก..."></textarea>
+=======
+                <textarea class="modal-note" id="modalNote" placeholder="เช่น ไม่ใส่น้ำแข็ง, เผ็ดน้อย, หวานน้อย, เพิ่มไข่มุก..."></textarea>
+>>>>>>> 66873d87a0fe8b698c5dfa76bb54ca6bc4a1743f
             </div>
 
             <div class="modal-actions">
@@ -173,8 +220,12 @@
                     <h3>หมายเลขโต๊ะ</h3>
                     <p class="section-desc">กรุณาระบุหมายเลขโต๊ะเพื่อพนักงานจะได้เสิร์ฟถูกโต๊ะ</p>
                     <div class="table-input-wrapper">
+<<<<<<< HEAD
                         <input type="number" id="checkoutTableNum" class="table-input" min="1" max="99"
                             placeholder="เช่น 1, 2, 3...">
+=======
+                        <input type="number" id="checkoutTableNum" class="table-input" min="1" max="99" placeholder="เช่น 1, 2, 3...">
+>>>>>>> 66873d87a0fe8b698c5dfa76bb54ca6bc4a1743f
                     </div>
                     <div class="table-grid" id="tableGrid">
                         <button class="table-btn" onclick="selectTable(1)">1</button>
@@ -200,15 +251,23 @@
                     <div class="delivery-form">
                         <input type="text" id="deliveryName" class="delivery-input" placeholder="ชื่อผู้รับ">
                         <input type="tel" id="deliveryPhone" class="delivery-input" placeholder="เบอร์โทรศัพท์">
+<<<<<<< HEAD
                         <textarea id="deliveryAddress" class="delivery-input delivery-textarea"
                             placeholder="ที่อยู่สำหรับจัดส่ง เช่น 123/4 ซ.สุขุมวิท..."></textarea>
+=======
+                        <textarea id="deliveryAddress" class="delivery-input delivery-textarea" placeholder="ที่อยู่สำหรับจัดส่ง เช่น 123/4 ซ.สุขุมวิท..."></textarea>
+>>>>>>> 66873d87a0fe8b698c5dfa76bb54ca6bc4a1743f
                     </div>
                     <div class="delivery-map-wrapper">
                         <label class="delivery-map-label">📍 ปักหมุดตำแหน่งจัดส่ง</label>
                         <div class="delivery-map-container" id="deliveryMapContainer">
                             <div id="deliveryMap"></div>
+<<<<<<< HEAD
                             <button type="button" class="delivery-gps-btn" id="deliveryGpsBtn"
                                 title="ใช้ตำแหน่งปัจจุบัน">📍</button>
+=======
+                            <button type="button" class="delivery-gps-btn" id="deliveryGpsBtn" title="ใช้ตำแหน่งปัจจุบัน">📍</button>
+>>>>>>> 66873d87a0fe8b698c5dfa76bb54ca6bc4a1743f
                         </div>
                         <div class="delivery-pin-status" id="deliveryPinStatus">
                             <span>🗺️</span>
@@ -274,8 +333,12 @@
 
                 <div class="checkout-actions">
                     <button class="btn-back" onclick="goBackToTable()">← ย้อนกลับ</button>
+<<<<<<< HEAD
                     <button class="btn-confirm-order" id="btnConfirmOrder" onclick="confirmCheckout()" disabled>✅
                         ยืนยันสั่งอาหาร</button>
+=======
+                    <button class="btn-confirm-order" id="btnConfirmOrder" onclick="confirmCheckout()" disabled>✅ ยืนยันสั่งอาหาร</button>
+>>>>>>> 66873d87a0fe8b698c5dfa76bb54ca6bc4a1743f
                 </div>
             </div>
         </div>
@@ -320,8 +383,12 @@
             <p id="orderSubtitle">กรุณารอสักครู่</p>
             <div class="order-table-info" id="orderTableInfo" style="display:none"></div>
             <div class="order-items-list" id="orderItemsList"></div>
+<<<<<<< HEAD
             <button class="btn-close-order" id="btnCloseOrder" onclick="closeOrderStatus()"
                 style="display:none">ปิด</button>
+=======
+            <button class="btn-close-order" id="btnCloseOrder" onclick="closeOrderStatus()" style="display:none">ปิด</button>
+>>>>>>> 66873d87a0fe8b698c5dfa76bb54ca6bc4a1743f
         </div>
     </div>
 
@@ -329,9 +396,13 @@
     <div class="chat-widget" id="chatWidget">
         <div class="chat-bubble" id="chatBubble" onclick="toggleChatPopup()">
             <svg class="chat-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<<<<<<< HEAD
                 <path
                     d="M12 2C6.477 2 2 5.813 2 10.5c0 2.674 1.395 5.07 3.577 6.67-.18 1.48-.914 2.79-1.527 3.68a.5.5 0 00.434.75c2.13-.08 3.97-.84 5.266-1.66.73.13 1.48.21 2.25.21 5.523 0 10-3.813 10-8.5S17.523 2 12 2z"
                     fill="white" />
+=======
+                <path d="M12 2C6.477 2 2 5.813 2 10.5c0 2.674 1.395 5.07 3.577 6.67-.18 1.48-.914 2.79-1.527 3.68a.5.5 0 00.434.75c2.13-.08 3.97-.84 5.266-1.66.73.13 1.48.21 2.25.21 5.523 0 10-3.813 10-8.5S17.523 2 12 2z" fill="white"/>
+>>>>>>> 66873d87a0fe8b698c5dfa76bb54ca6bc4a1743f
             </svg>
             <span class="chat-badge-dot"></span>
         </div>
@@ -386,5 +457,8 @@
     </script>
 
 </body>
+<<<<<<< HEAD
 
+=======
+>>>>>>> 66873d87a0fe8b698c5dfa76bb54ca6bc4a1743f
 </html>
